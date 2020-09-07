@@ -1,0 +1,1560 @@
+Security Execution policy
+
+Get-ExecutionPolicy
+
+Set-ExecutionPolicy RemoteSigned
+
+
+##################################
+Start-Transcript
+#################################
+
+#create a folder named test on the c:\ drive
+New-Item -Path "c:\" -Name "test" -ItemType "directory"
+
+#start the transcript and write to C:\test\transcript0.txt
+Start-Transcript -Path "C:\test\transcript0.txt" -NoClobber
+
+#Alternatively, you can just type in the below, and it will save the transcript file to a default location. 
+Start-Transcript 
+
+
+Get-Host | Select-Object Version
+
+$PSVersiontable
+
+#############################################
+Help Files for PowerShell:  Update-Help 
+#############################################
+
+Update-Help 
+
+
+###########################################
+PowerShell Commands:  Get-Command
+###########################################
+
+#Get-Command returns the cmdlets, functions, and aliases in PowerShell.
+Get-Command
+# Using a wildcard * returns all the available commands.
+Get-Command * 
+# The use of wildcards * as below will return all commands that have process in the name.
+Get-Command –Name *process*
+
+############################
+PowerShell Alias
+############################
+
+#To check if a character is a PowerShell alias, you can run the Get-Alias cmdlet. The below command is checking if % is an alias.
+Get-Alias -Name %
+
+#To get a full list of aliases, you can run the Get-command below:
+Get-Command * |  where-object {$_.commandtype -eq "alias"}  | Format-Table
+
+
+##############################
+PowerShell Pipeline
+#############################
+
+"25/12/2020" | get-date | out-file c:\temp\date.txt
+
+#############################
+Get-member
+#############################
+
+Get-Service | select-object Status, Name, StartType, DependentServices | Format-Table -Autosize
+
+#########################
+Get-Help
+#########################
+
+#help on Get-Process
+Get-Help Get-Process
+# The below opens the help files in a text window, extremely useful.
+Get-Help Get-Process -ShowWindow
+# The below command will give you examples of how to run the cmdlet.
+Get-Help Get-Process -examples
+# The below command will take you to the PowerShell online help files.
+Get-Help Get-Process -online
+
+
+############################
+Comments in PowerShell
+############################
+
+# You can run the below to generate report headings in PowerShell.
+
+"#"*100
+"Add Title here for your text:  Generated $(Get-Date)"
+"#"*100
+
+
+################################
+Write-Output & Write-Host
+################################
+
+#Let us review the two commands we used previously in the PowerShell pipeline chapter. If we run the below commands, they both display the output to the console.
+
+"25/12/2020" | get-date | Write-Output 
+"25/12/2020" | get-date | Write-Host 
+
+
+#So, what is the difference? Run the below commands and review the two text files generated.  
+"25/12/2020" | get-date | Write-Output | out-file c:\temp\dateout.txt
+"25/12/2020" | get-date | Write-Host   | out-file c:\temp\datehost.txt
+
+
+
+#####################
+Variables 
+####################
+
+$computer ='computer1'
+$computer
+
+# HostName will get the name of the local computer
+$computer = Hostname
+$computer
+
+#This statements below show the various ways of assigning a list of computer names to the $computers  variable.
+$computers ='computer1', 'computer2', 'computer3'
+$computers
+
+# create a text file named servers on your c:\test\ and add server names here.
+$computers = get-content "c:\test\servers.txt"
+$computers
+
+# Get a list of Servers from Active Directory with sql in the name.
+$computers = (Get-ADComputer -Filter 'Name -like "*sql*"' | select Name)
+$computers
+
+# Get all the computer names from Active Directory
+$computers=(Get-ADComputer -Filter *).Name
+
+#It is quite common to assign dates to variables. 
+
+$today = Get-Date
+$today
+$today = Get-Date -format "yyyyMMdd"
+$today
+$today = Get-Date -Format "MM/dd/yyyy"
+$today
+$Yesterday = (Get-Date) - (New-TimeSpan -Day 1)
+$Yesterday
+# to find out more about the Get-Date cmdlet run:
+Get-Help Get-Date -ShowWindow
+
+#This command gets a credential object and saves it in the $cred variable.
+$cred = Get-Credential
+$cred
+
+#This command shows how to use a credential variable and computer variable with a Get-CimInstance command, to retrieve disk storage and disk storage free space details.
+
+$computer ='computer1'
+$cred= Get-Credential
+Get-CimInstance Win32_LogicalDisk-ComputerName $computer -Credential $cred
+
+
+
+###########################################
+$_. Pipeline Variable 
+###########################################
+
+#Check if a service name matches BITS - Background Intelligent Transfer Service we use the $_.  And add the property name. 
+Get-Service | Where {$_.Name -Match "BITS"}
+
+
+
+#######################
+Format-Table
+#########################
+
+#Text in message column gets truncated.
+Get-EventLog -LogName Application -Newest 20
+
+#Text in message column is preserved.
+Get-EventLog -LogName Application -Newest 20 |Format-Table -Autosize -wrap
+
+###########################
+Format-List
+###########################
+
+#View the application event log as a list.
+Get-EventLog -LogName Application -Newest 20 |Format-List
+
+#############################
+Output Results
+#############################
+
+#Output results to a table. You can use ft -A as shorthand. 
+Get-Service | Format-Table -Autosize
+
+#Output results to a list. You can use fl as shorthand. 
+Get-Service | Format-List
+
+#Output results to a Grid. You can use ogv as shorthand.
+Get-Service | Out-GridView
+
+#Output results to a text file.
+Get-Service | Out-File c:\test\services.txt
+
+
+#Output results to a csv file.
+Get-Service | Export-Csv c:\test\services.csv
+
+#Output results to a csv file and remove the type information
+Get-Service | Export-Csv c:\test\servicesnt.csv -NoTypeInformation
+
+#Output results to an XML file
+Get-Service | Export-clixml c:\test\services.xml
+
+#Output results to an HTML file in table format
+Get-Service | ConvertTo-Html | Out-File c:\test\services.html
+
+#Output results to an HTML file in a list format
+Get-Service | ConvertTo-Html -As LIST | Out-File c:\test\serviceslist.html
+
+
+
+#################################
+PowerShell Operators
+#################################
+
+#Check where process name matches Chrome 
+Get-Process | Where-Object {$_.Name -Match "Chrome"}
+
+#Check where process id equals 3792  
+Get-Process | Where-Object {$_.id -eq 3792}
+
+#Check for processes using over 250MB working set memory  
+Get-Process | Where-Object {$_.WorkingSet -GT 250MB}
+
+#Check for processes with a ProcessName like Google, use wildcards * 
+Get-Process | Where-Object {$_.ProcessName -like "*Google*"}
+
+#Check for processes with handles Greater-than or equal to 1000
+Get-Process | Where-Object Handles -GE -Value 1000
+
+#############################
+Select-Object
+#############################
+
+#This will display details about the items in the test folder 
+Get-ChildItem c:\test 
+
+#This will display just the name and lastwritetime of the first five items 
+Get-ChildItem c:\test | Select-Object name, lastwritetime -first 5
+
+
+#This will return all data from the processes running on your computer
+Get-Process
+
+#You can use select to choose only the columns you require as below.
+Get-Process | Select ProcessName, Id, WS
+
+###########################
+Where-Object
+##########################
+
+#Where cmdlet using a scriptblock to find stopped services
+Get-Service | Where-Object {$_.Status -eq "Stopped"}
+
+#Where cmdlet using a comparison to find stopped services
+Get-Service | where Status -eq "Stopped"
+
+#Where cmdlet using a scriptblock to find initiated system restart 
+Get-EventLog -LogName system |where {$_.EventID -eq 1074}
+
+#Where cmdlet using a comparison to find initiated system restart 
+Get-EventLog -LogName system |where EventID -eq 1074
+
+###################################
+Sorting Objects Sort-Object
+###################################
+
+#This will sort on the lastwritetime and give you oldest five items
+Get-ChildItem c:\test | Sort-Object lastwritetime | Select-Object name, lastwritetime -first 5
+
+#This will sort on the lastwritetime, descending and give you newest five items. 
+Get-ChildItem c:\test | Sort-Object lastwritetime -Descending| Select-Object name, lastwritetime -first 5
+
+#This displays processes with the highest memory usage based on their working set (WS) size
+Get-Process | Sort-Object -Property WS | Select-Object -Last 5
+
+#This displays Services ordered by status,
+Get-Service | Sort status | Select name, status, displayname | FT -A
+
+
+############################
+Group-Object
+############################
+
+# Group processes by priority class
+Get-Process | Group-Object -Property PriorityClass
+
+# Group processes by priority class and remove the element: -NoElement
+Get-Process | Group-Object -Property PriorityClass -NoElement
+
+#Group processes by name, with more than one instance: Count greater than 1
+Get-Process | Group-Object -Property Name  | Where-Object {$_.Count -gt 1}
+
+#Group processes by name and remove the element: -NoElement
+Get-Process | Group-Object -Property Name -NoElement | Where-Object {$_.Count -gt 1}
+
+##################################
+Loops ForEach-Object
+#################################
+
+#This example demonstrates using a ForEach,  printing all the computer names in a $computer variable:
+$computers ='computer1', 'computer2', 'computer3'
+ForEach ($computer in $computers)
+{
+Write-Host "This is $computer"
+}
+
+#The example below demonstrates some typical code you may see using a ForEach,  to iterate over computer names and executing Test-Connection,  which sends pings to each computer to check if they are online.
+
+$computers ='computer1', 'computer2', 'computer3'
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+		Write-Output "$computer - Online"
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+
+#Get the last boot-up time from multiple computers.
+$computers ='computer1', 'computer2', 'computer3'
+ForEach ($computer in $computers)
+{
+Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $computer | select LastBootUpTime}
+
+
+#Get the last boot up time from multiple computers.
+$computers ='computer1', 'computer2', 'computer3'
+$computers | ForEach-Object {
+Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $_ | select LastBootUpTime}
+
+
+###########################
+Comparing Objects
+###########################
+
+#Comparing Services
+#Run this with the BITS service on
+Start-Service BITS
+get-service | out-file c:\test\baselineservcice.txt
+
+#Run this with the BITS service off
+Stop-service BITS
+get-service | out-file c:\test\servcicenow.txt
+
+#Now compare the difference.
+Compare-Object -ReferenceObject (Get-Content -Path c:\test\baselineservcice.txt) -DifferenceObject (Get-Content -Path c:\test\servcicenow.txt)
+
+#####################################
+Disk and Folder Commands
+####################################
+
+# This returns all volumes on all partitions, on all disks
+Get-Volume
+
+#The Get-PSDrive cmdlet gets the drives in the current session. You can get a particular drive or all drives in the session.
+Get-PSDrive -PSProvider filesystem
+
+# local storage device on a computer system running Windows
+Get-WmiObject Win32_LogicalDisk | ft -a
+
+#This command creates a new folder called temp in C:\test\
+New-Item -Path 'C:\test\temp' -ItemType Directory
+
+#This command creates a new empty file called hal.txt in C:\test\temp\
+New-Item -Path 'C:\test\temp\hal.txt' -ItemType File
+
+#This command adds text to the hal.txt file
+Add-Content c:\test\temp\hal.txt " I'm sorry, Dave, I'm afraid I can't do that."
+
+#Display details of the items in the test folder.
+Get-ChildItem c:\test
+
+#Display details of the items in the test folder and any subfolders.
+Get-ChildItem C:\test -Recurse
+
+#get the sum size of all the files in the folder Test.
+Get-ChildItem -Path c:\test | Measure-Object -Sum Length 
+
+#get the sum size of all the files in the Test folders and subfolders.
+Get-ChildItem -Path c:\test -Recurse -Force | Measure-Object -Sum Length
+
+#display sizes in KB
+Get-ChildItem C:\test | Select Name, @{Name="Size_In_KB";Expression={$_.Length / 1Kb}}
+
+#display sizes in KB and subfolders.
+Get-ChildItem C:\test -Recurse -Force | Select Name, @{Name="Size_In_KB";Expression={$_.Length / 1Kb}}
+
+
+#If you want to now remove the temp folder, follow the below commands.
+#if you have items in the folder you will be asked for a confirmation to delete the folder.
+Remove-Item c:\test\temp 
+#to delete a folder and sub-items without a confirmation use -Recurse. 
+Remove-Item c:\test\temp -Recurse
+
+############################
+Event Log Viewer
+############################
+#This example gets the 20 most recent entries from the System, Application and Security event logs.
+Get-EventLog -LogName System -Newest 20
+Get-EventLog -LogName Application -Newest 20
+Get-EventLog -LogName Security -Newest 20
+
+#This will get the 20 most recent errors from the System and Application logs. Review the EntryTypes, what entry types are you most concerned about.
+Get-EventLog -LogName System -EntryType Error -Newest 20
+Get-EventLog -LogName Application -EntryType Error -Newest 20
+# use FT -A -wrap and expand the powershell console so messages are not truncated.
+Get-EventLog -LogName Application -EntryType Error -Newest 20 | FT -A -wrap
+
+#Select the last ten times-initiated restarts occurred.
+Get-EventLog -LogName system |where {$_.EventID -eq 1074} | select TimeGenerated, Username, Message  -first 10 | FT -A -wrap
+
+#Use Source user32 to detect an initiated restart
+Get-EventLog -LogName system -Source user32 -Newest 1 | FT -A -wrap
+
+#Use the multiple event Id’s above to detect restarts and system hangs.
+Get-EventLog system |where {$_.EventID -in,41,1001,1074,1076,6006,6008}| select TimeGenerated, EventID, Source, Message  -first 100 | FT -A -wrap
+
+#Monitor Logon Events, from the data, review the logon type to see what type of logon it was.
+Get-EventLog -LogName security |where {$_.EventID -eq 4624} | FT -A -wrap
+
+
+
+#This example gets the 20 most recent entries from the System, Application and Security event logs.
+Get-WinEvent -LogName System -MaxEvents 20
+Get-WinEvent -LogName Application -MaxEvents 20
+Get-WinEvent -LogName Security -MaxEvents 20
+
+#This example gets all the entries from the System, Application and Security event logs, since yesterday, using the $Yesterday variable.
+$Yesterday = (Get-Date) - (New-TimeSpan -Day 1)
+
+Get-WinEvent -LogName System | Where-Object { $_.TimeCreated -ge $Yesterday }
+Get-WinEvent -LogName Application| Where-Object { $_.TimeCreated -ge $Yesterday }
+Get-WinEvent -LogName Security| Where-Object { $_.TimeCreated -ge $Yesterday }
+
+
+#This example uses a -FilterHashtable and searches the event log for the most recent (-MaxEvents 1) shutdown events.
+#The most recent, initiated shutdown event
+Get-WinEvent -FilterHashtable @{Logname='System';ID=1074}  -MaxEvents 1 | FT -A -wrap
+
+#searches multiple event id’s related to shutdown events
+Get-WinEvent -FilterHashTable @{LogName='System';ID='41',’1001’,’1074’,’1076’,’6008’} | FT -A -wrap
+
+
+#searches multiple event id’s related to shutdown events, without the use of a filter hash table.
+Get-WinEvent -LogName System | where {$_.ID -in,41, 1001,1074,1076,6008}| ft -a -w
+
+
+#Monitor if SmithA logged into a  server in the last 24 hours. Review the Logon type from the data.
+# Successful logons last 24 hours by SmithA
+Get-WinEvent -FilterHashTable @{LogName='security';ID=’4624’ ; StartTime = (Get-Date).AddDays(-1) } | Where-Object { ($_.Message -like "*SmithA*") }| FT -A -wrap
+
+# Last 100 Failed logons 
+Get-WinEvent -ComputerName -FilterHashTable @{ LogName = ”Security”; ID = ‘4625’} -MaxEvents 100 | FT -A -wrap 
+
+########################
+Processes
+#######################
+
+#View all processes
+Get-Process
+#View excel processes only
+Get-Process excel
+#View excel and notepad processes
+Get-Process excel, notepad
+
+#order processes using the most working set memory
+Get-Process | Sort WS -Descending |ft -A
+#order by the top 5 processes using the most working set memory
+Get-Process | Sort WS -Descending | Select Id, ProcessName, WS -first 5 | ft -A
+
+#order by the top 5 processes using the most working set memory. Convert the kilobytes to megabytes by dividing by 1MB. WS / 1MB.   
+Get-Process | Sort WS -Descending | Select Id, ProcessName, @{Label = "WS(MB)"; Expression = {[int]($_.WS / 1MB)}} -first 5 | ft -A
+
+#View all processes and the owner. The -IncludeUserName switch is only available in PowerShell 4.0 and above
+Get-Process -IncludeUserName
+#View all processes and sort by the owner
+Get-Process -IncludeUserName | Sort UserName
+
+#This will display interactive sessions, using the explorer process.
+Get-Process -IncludeUserName -Name explorer
+
+#The below shows processes for a name match and a name like 
+Get-Process -IncludeUserName | Where-Object {$_.username -match "JonesB"}
+Get-Process -IncludeUserName | Where-Object {$_.username -like "*SmithA*"}
+
+# You have been told you need to stop all notepad processes by user SmithA
+#The code below will Identify all notepad processes by SmithA
+Get-Process notepad -IncludeUserName | Where-Object {$_.username -match "SmithA"} |FT -A
+
+#The code below will show you what processes will be stopped from the code
+Get-Process notepad -IncludeUserName | Where-Object {$_.username -match "SmithA"} |Select username, processname, id | Stop-Process -WhatIf
+
+#The code below will make you confirm each process to stop
+Get-Process notepad -IncludeUserName | Where-Object {$_.username -match "SmithA"} |Select username, processname, id | Stop-Process -Confirm
+
+#This will stop the processes identified and will not ask for confirmation
+Get-Process notepad -IncludeUserName | Where-Object {$_.username -match "SmithA"} |Select username, processname, id | Stop-Process -Force 
+
+
+#The command below will stop all non-responsive applications. Use the whatif , confirm or force parameter as required.
+Get-Process | Where -FilterScript {$_.Responding -eq $false} | Stop-Process
+
+
+# The following command checks the top 5 processes which are using the most memory on remote computers. Review the chapter Remote Management for more Examples. 
+Get-Process -ComputerName Server01, Server01 | Sort WS -Descending | Select MachineName, Id, ProcessName,WS -first 5 | ft -A
+
+
+# The following command orders processes which are using the most memory and dispalys values in MB 
+Get-Process | Sort WS -Descending | Select Id, ProcessName, @{Label = "WS(MB)"; Expression = {[int]($_.WS / 1MB)}} -first 5 | ft -A
+
+
+
+#Using the techniques described previously, we can convert several columns as below. Review the output from the command below listing Processes running ordered by Memory use.
+
+Get-Process | Sort WS –Descending| Format-Table `
+    @{Label = "NPM(K)"; Expression = {[int]($_.NPM / 1024)}},
+    @{Label = "PM(K)"; Expression = {[int]($_.PM / 1024)}},
+    @{Label = "WS(MB)"; Expression = {[int]($_.WS / 1MB)}},
+    @{Label = "VM(MB)"; Expression = {[int]($_.VM / 1MB)}},
+    @{Label = "CPU(s)"; Expression = {if ($_.CPU) {$_.CPU.ToString("N")}}},
+    Id, ProcessName -AutoSize 
+
+
+
+###################################
+Services
+##################################
+
+#get all services
+Get-Service
+
+#sorts the services by status
+Get-Service | Sort status
+
+#Get all services where the service name begins with win
+Get-Service -Name "win*"
+
+#Get all services which are running
+Get-Service | Where-Object {$_.Status -eq "Running"}
+
+#How to start, stop and restart a service, with verbose reporting.
+Start-Service -Name BITS -Verbose
+Stop-Service -Name BITS -Verbose
+Restart-Service -Name BITS -Verbose
+
+
+#Get all services and displays dependent services
+Get-Service -DependentServices | Select name, status, displayname, DependentServices |FT -A
+
+#You have been asked to stop the SQL Server.
+#Find any services if they are dependent on the MSSQLSERVER Service
+Get-Service MSSQLSERVER -DependentServices
+#stopping a service with dependencies will fail as below:
+Stop-Service -Name MSSQLSERVER -Verbose
+
+#If a service has dependencies you can force the service to stop as below
+Stop-Service -Name MSSQLSERVER -force 
+
+#Alternatively, you can stop all dependent services first as below.
+Get-Service MSSQLSERVER | Foreach { Stop-Service $_.DependentServices -passthru} 
+
+#If you want to start SQL and all dependent services as well use the below.
+Get-Service MSSQLSERVER | Foreach { Start-Service $_.name -passthru; Start-Service $_.DependentServices -passthru}
+
+
+This example shows how to change a service's startup type.
+#Check the StartupType of the BITS service
+Get-Service BITS | Select Name, StartType, Status
+#Set the BITS service StartupType to Automatic
+Set-Service -Name BITS -StartupType Automatic
+#Check the StartType has changed as expected.
+Get-Service BITS | Select Name, StartType, Status
+
+
+#Check the BITS service on multiple computers
+Get-Service BITS -computername (get-content c:\test\Servers.txt) | Select Machinename, name, status | ft -A
+
+
+# If BITS service is stopped, then start service. 
+Get-Service -computername Comp1,Comp2 -Name BITS | where { $_.Status -eq "stopped" } |  Start-Service
+
+
+# Starting and Stopping Services on remote computers.
+Start-Service -Name BITS –ComputerName Comp1, Comp2 
+Stop-Service -Name BITS –ComputerName Comp1, Comp2 
+Restart-Service -Name BITS –ComputerName Comp1, Comp2 
+
+
+# Using Get-Service to pipe | the service name on a remote computer and Starting and Stopping Services.
+Get-Service -ComputerName Computer1 -Name BITS | Set-Service -Status Stopped
+Get-Service -ComputerName Computer1 -Name BITS | Set-Service -Status Running
+
+
+
+########################
+Get-WmiObject
+########################
+
+#Note the shorthand for Get-WmiObject -Class is just to use gwmi.
+Get-WmiObject -Class Win32_operatingSystem | Format-List -Property *
+Get-WmiObject -Class Win32_computerSystem | Format-List -Property *
+Get-WmiObject -Class Win32_Bios | Format-List -Property *
+Get-WmiObject -Class Win32_baseboard | Format-List -Property *    
+Get-WmiObject -Class Win32_processor | Format-List -Property * 
+Get-WmiObject -Class Win32_PhysicalMemory | Format-List -Property *
+Get-WmiObject -Class Win32_LogicalDisk | Format-List -Property *  
+Get-WmiObject -Class Win32_Volume | Format-List -Property *  
+Get-WmiObject -Class Win32_Share | Format-List -Property *      
+Get-WmiObject -Class Win32_Printer | Format-List -Property *
+
+
+
+#Display disk information on the local computer. For remote computers use the switch  -ComputerName Server01, Server02
+Get-WmiObject -Class Win32_LogicalDisk | Format-table name, label, freespace, size
+
+#Display memory available on the local computer
+(Get-WmiObject Win32_PhysicalMemory | measure-object Capacity -sum).sum/1gb
+
+# Display currently logged on user
+Get-WmiObject win32_computersystem | Select username
+
+#Display all objects in the Administrators group on the local computer
+Get-WmiObject -Class Win32_Groupuser | Where { $_.GroupComponent -match ‘administrators’} | Select GroupComponent, partcomponent |ft -A
+
+#Display all objects in the Administrators group on a remote computer
+Get-WmiObject -Class Win32_Groupuser -Computer Comp1 | Where { $_.GroupComponent -match ‘administrators’} | Select GroupComponent, partcomponent |ft -A
+
+
+##############################
+Get-CimInstance
+##############################
+
+Get-CimInstance -Class Win32_Bios | Format-List -Property *
+Get-CimInstance -Class Win32_computerSystem | Format-List -Property *
+Get-CimInstance -Class Win32_baseboard | Format-List -Property *    
+Get-CimInstance -Class Win32_processor | Format-List -Property *    
+Get-CimInstance -Class Win32_Share | Format-List -Property *      
+Get-CimInstance -Class Win32_LogicalDisk | Format-List -Property *  
+Get-CimInstance -Class Win32_Volume | Format-List -Property *  
+Get-CimInstance -Class Win32_PhysicalMemory | Format-List -Property *
+Get-CimInstance -Class Win32_Printer | Format-List -Property *
+Get-CimInstance -Class Win32_operatingSystem | Format-List -Property *
+
+
+# Find the last boot-up time of desktop LonWin07-04
+Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName LonWin07-04 | select LastBootUpTime
+
+# Confirm the last boot-up time of some servers.
+Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName serv1, serv2 | select LastBootUpTime
+
+#Complaints about the performance of a Server,  Serv01 you can run the below commands to see the memory usage and average CPU load percentage.
+#review the memory usage and FreePhysicalMemory for resource issues.
+Get-CimInstance Win32_OperatingSystem -ComputerName Serv01 |
+  Format-Table -Property TotalVirtualMemorySize, TotalVisibleMemorySize,
+    FreePhysicalMemory, FreeVirtualMemory, FreeSpaceInPagingFiles
+
+#review the CPU load on the remote server.
+Get-CimInstance Win32_processor -ComputerName Serv01 | Measure-Object -Property LoadPercentage -Average | Select Average
+
+#We can also use the Get-CimInstance cmdlet’s to gather information on the computers in the network.
+#Get the OS install date
+Get-CimInstance -Class Win32_OperatingSystem -ComputerName com1,com2 | Select InstallDate
+
+#We can get the total capacity of the physical memory, but it is shown in bytes.
+Get-CimInstance -ClassName Win32_PhysicalMemory -ComputerName com1,com2 | select Capacity
+
+#we can convert this to GB, as shown below.
+Get-CimInstance -ClassName Win32_PhysicalMemory -ComputerName com1,com2 | select @{Label = "Memory(GB)"; Expression = {[int]($_.Capacity / 1GB)}}
+
+
+#We can put this all together and use the Get-CimInstance cmdlet’s to make a simple computer audit. We will use the PSCustomObject and assign the variable $AuditTable to hold the structured data. Review the command below to see how this is used.
+#Uncomment below for all computers on the AD network
+#$computers=(Get-ADComputer -Filter *).Name
+#Below just gets audit details on the local computer
+$computers =hostname
+foreach ($computer in $computers) {
+        $OS = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+        $CPU = Get-CimInstance -ComputerName $computer -ClassName Win32_Processor
+        $MEM = Get-CimInstance -ComputerName $computer -ClassName Win32_PhysicalMemory
+        $installD = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+             $AuditTable = [PSCustomObject]@{
+             ComputerName = $computer
+             OperatingSystem = $OS.Caption
+            "Memory(GB)" = $MEM.Capacity/1GB
+             CPU = $CPU.Name
+             InstallDate =$installD.InstallDate
+        } 
+}
+
+#The audit data is now held in the $AuditTable
+#We can output the data as a table
+$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A
+
+#We can output the data as a list
+$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |fl
+
+#We can output the data as a GridView
+
+$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate | Out-GridView
+
+#We can export the data to a csv file
+$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate | Export-Csv -Path c:\test\Audit.csv -NoTypeInformation
+
+
+
+#To make this more complete we can…
+#Gather an audit for all computers on the AD network and their online, offline status.
+
+$computers=(Get-ADComputer -Filter *).Name
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+
+
+        $OS = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+        $CPU = Get-CimInstance -ComputerName $computer -ClassName Win32_Processor
+        $MEM = Get-CimInstance -ComputerName $computer -ClassName Win32_PhysicalMemory
+        $installD = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+             $AuditTable = [PSCustomObject]@{
+             ComputerName = $computer
+             OperatingSystem = $OS.Caption
+            "Memory(GB)" = $MEM.Capacity/1GB
+             CPU = $CPU.Name
+             InstallDate =$installD.InstallDate
+        }
+
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A
+
+
+############################
+Computer Restart
+###########################
+
+# Restart-Computer restarts the local computer.
+Restart-Computer
+
+#Using -WhatIf shows what would happen if the Restart-Computer cmdlet runs. 
+Restart-Computer -WhatIf
+
+#Prompts you for confirmation before running Restart-Computer.
+Restart-Computer -Confirm
+
+#The Force parameter forces an immediate restart.
+Restart-Computer -Force
+
+# Restart multiple computers, specifying computer names as below
+Restart-Computer -ComputerName Server01, Server02, Server03
+
+
+This example forces an immediate restart of the servers listed in the servers.txt file. 
+$computers = Get-Content -Path C:\test\servers.txt
+Restart-Computer -ComputerName $computers -Force
+
+
+######################################
+PowerShell History Files
+#####################################
+
+#Review all the settings
+Get-PSReadLineOption
+
+#To view the save path location for the history files.
+(Get-PSReadlineOption).HistorySavePath
+
+#To view the history in PowerShell run.
+cat (Get-PSReadlineOption).HistorySavePath
+
+#The Get-History cmdlet gets the session history, that is, the list of commands entered during the current session.
+Get-History
+
+# if you just want to see the last 10 commands use:
+Get-History -Count 10
+
+#If you want to save the PowerShell command history for the current session you can run the below command.
+Get-History | Export-Clixml -Path c:\test\commands.xml
+
+#To import the saved history file, you just use the Add-History cmdlet.
+Add-History -InputObject (Import-Clixml -Path C:\test\commands.xml)
+
+
+#######################
+Email
+####################
+Send-MailMessage -To “Aggie.Smith@fortiumx.com” -From “Jim.Jones@fortiumx.com”  -Subject “Computer Audit” -Body “Computer Audit Information!” -Attachments c:\test\audit.csv -Priority High -SmtpServer “smtp.Fortiumx.com” -Port 25
+
+
+
+###########################
+Network Commands
+###########################
+
+# internetbeacon.msedge.net:13.107.4.52, is a MS test network server.
+ipconfig
+ipconfig /all
+Ping 13.107.4.52
+Pathping 13.107.4.52
+Tracert 13.107.4.52
+
+#Google DNS IP address
+nslookup 8.8.8.8
+
+#To use telnet through PowerShell this needs to be installed as below. Google smtp server using port 465 (default port for smtp 25)
+Install-WindowsFeature -name Telnet-Client 
+Telnet 66.102.1.109 465
+
+
+#To ping one or move servers
+Test-Connection -ComputerName Server01, Server02, Server12
+
+# To ping all computer names from Active Directory
+$computers=(Get-ADComputer -Filter *).Name
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+		Write-Output "$computer - Online"
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+
+# This command tests ping connectivity to a default server: internetbeacon.msedge.net
+Test-NetConnection
+
+#This command displays detailed information on port 465 for the Google smtp server
+Test-NetConnection -ComputerName smtp.gmail.com -Port 465 -InformationLevel "Detailed" 
+
+#detailed information on port 80 for Server01 with routing info.
+Test-NetConnection -ComputerName Server01 -DiagnoseRouting -InformationLevel Detailed
+
+
+Get-NetIPConfiguration 
+
+# This command gets the IP configuration information for all of the interfaces on the computer, including virtual interfaces, loopback interfaces, and disconnected interfaces
+
+Get-NetIPConfiguration -All
+
+#gets the basic network adapter properties
+Get-NetAdapter
+
+#gets networking statistics from a network adapter
+Get-NetAdapterStatistics
+
+#The Dns.GetHostEntry method, resolves a host name or IP address to an IPHostEntry instance, example as below for the Google DNS IP.
+[System.Net.Dns]::GetHostEntry("8.8.8.8")
+
+#return just the hostname 
+[System.Net.Dns]::GetHostEntry("8.8.8.8").HostName
+
+#Return the ipaddress
+[System.Net.DNS]::GetHostAddresses("www.google.com").IPAddressToString
+
+
+
+###################################
+Get Web Content with PowerShell
+###################################
+
+$WebContent = Invoke-WebRequest "https://support.microsoft.com/en-gb/help/13853/windows-lifecycle-fact-sheet"
+$WebContent
+
+#view the links
+$WebResponse.links 
+
+#view inner text and href
+$WebContent.links | select innerText,href | ft
+
+#view just the href
+$WebContent.links | select href
+
+#view only href, where the inner text equals security
+$WebContent.links | where-object {$_.innerText -eq "Security"} | select innerText,href |ft
+
+#view only href, where the inner text contains the word security
+$WebContent.links | where-object {$_.innerText -like "*Security*"} | select innerText,href |ft
+
+#Open a website
+Start-Process " https://support.microsoft.com/en-gb/help/13853/windows-lifecycle-fact-sheet"
+
+###################################
+SQL Server with PowerShell 
+###################################
+
+
+Invoke-Sqlcmd -Query "SELECT @@SERVERNAME AS ServerName, GETDATE() AS TimeOfQuery" -ServerInstance "LonSQL01"
+
+#You have an audit you need to list all members in the Sysadmin role.
+Invoke-Sqlcmd -Query " exec sp_helpsrvrolemember @srvrolename='sysadmin'" -ServerInstance "LonSQL01"
+
+#You need to provide an Audit on your SQL Server.
+Invoke-Sqlcmd -Query "SELECT CONVERT(varchar(200), SERVERPROPERTY('Servername')) AS Server,
+	(select datediff(dd,min(login_time),getdate()) from master..sysprocesses)  Last_Days_Since_Reboot,
+	(select case when count(*) =1 then 'Yes' else 'No' End SQLAgent_Running from master..sysprocesses
+	where program_name='SQLAgent - Generic Refresher') SQLAgent_Running,
+	cast(db_name() as varchar(20)) + ' Queried' DataBaseQueryRunON,
+    substring(cast( @@VERSION as varchar(28)),10,28) SQL_Version,
+    cast(SERVERPROPERTY('Edition') as varchar(100)) EngineEdition,
+    CONVERT(varchar(200), SERVERPROPERTY('ProductLevel')) AS SQL_ProductLevel,
+    CONVERT(varchar(200), SERVERPROPERTY('ProductVersion')) AS SQL_ProductVersion,
+	  @@VERSION WindowsVersion,
+    cast(substring(cast(@@VERSION as varchar(300)), CHARINDEX('NT ',@@VERSION), 100) as varchar(40)) WindowsServicePack,
+    (select cpu_count  from sys.dm_os_sys_info) LogicalCPUCount,      
+	 (select physical_memory_kb from sys.dm_os_sys_info) physical_memory_kb,
+                                           SERVERPROPERTY('Collation') Collation,
+     CONVERT(char(100), SERVERPROPERTY('ResourceLastUpdateDateTime')) AS ResourceLastUpdateDateTime,
+    case WHEN SERVERPROPERTY('IsIntegratedSecurityOnly') = 1 THEN 'Integrated security' WHEN SERVERPROPERTY('IsIntegratedSecurityOnly') = 0 THEN 'Not Integrated security' END AS IsIntegratedSecurityOnly, 
+    isnull(CONVERT(varchar(200),SERVERPROPERTY('InstanceName')),'--') AS InstanceName, 
+                       CASE WHEN CONVERT(char(100), SERVERPROPERTY('IsClustered')) = 1 THEN 'Clustered' WHEN SERVERPROPERTY('IsClustered') 
+                      = 0 THEN 'Not Clustered' WHEN SERVERPROPERTY('IsClustered') = NULL THEN 'Error' END AS IsClustered, CASE WHEN CONVERT(char(100), 
+                      SERVERPROPERTY('IsFullTextInstalled')) = 1 THEN 'Full-text is installed' WHEN SERVERPROPERTY('IsFullTextInstalled') 
+                      = 0 THEN 'Full-text is not installed' WHEN SERVERPROPERTY('IsFullTextInstalled') = NULL THEN 'Error' END AS IsFullTextInstalled,
+   
+	(select count(*) from master..sysdatabases) Database_Total,
+(SELECT CONVERT(DECIMAL(10,2),(SUM(size * 8.00) / 1024.00 / 1024.00)) FROM master.sys.master_files) As UsedSpaceGB " -ServerInstance "LonSQL01"
+
+
+
+#You can save the above SQL code in a file call SqlAuditCmd.sql and run the below command to output the results to a file.
+Invoke-Sqlcmd -InputFile "C:\test\SqlAuditCmd.sql" | Out-File -FilePath "C:\test\SqlAuditCmd.txt"
+
+
+#How to start, stop and restart SQL Server through PowerShell.
+#You have been asked to stop the SQL Server.
+#Find any services if they are dependent on the MSSQLSERVER Service
+Get-Service MSSQLSERVER -DependentServices
+#stopping a service with dependencies will fail as below:
+Stop-Service -Name MSSQLSERVER -Verbose
+
+#If a service has dependencies you can force the service to stop as below
+Stop-Service -Name MSSQLSERVER -force 
+
+#Alternatively, you can stop all dependent services first as below.
+Get-Service MSSQLSERVER | Foreach { Stop-Service $_.DependentServices -passthru} 
+
+#If you want to start SQL and all  dependent services as well use the below.
+Get-Service MSSQLSERVER | Foreach { Start-Service $_.name -passthru; Start-Service $_.DependentServices -passthru}
+
+##########################################
+Active Directory Users 
+###########################################
+
+#Get default properties for user Smitha
+Import-Module ActiveDirectory
+Get-ADUser Smitha
+Get-ADUser -Identity Smitha
+
+#Get all properties for the user Smitha. -Identity refers to the SamAccountName.
+Get-ADUser -Identity Smitha -Properties *
+#Just get the mail details for Smitha
+Get-ADUser -Identity Smitha -Properties mail | select mail
+
+#Check if the user Smitha  account is enabled, locked out or has a password expired 
+Get-ADUser Smitha -properties * |Select-Object Name,SamAccountName,enabled,Lockedout,accountlockouttime,lastbadpasswordattempt,PasswordExpired | Format-table  -A
+
+#We can use the -Filter parameter to search for a user where we only know the first name of Sammy.
+Get-ADUser -Filter 'Name -like "Sammy*"' | Format-Table Name,SamAccountName -A
+
+#the -Filter parameter allows us to search for service accounts that have svc in the name, this command will return all your service accounts.
+Get-ADUser -Filter 'Name -like "*svc*"' | Format-Table Name,SamAccountName -A
+
+#You need to find all accounts where there is no email specified. We use -Filter * to search all accounts in AD. You can use this for any missing  properties, location, phone number etc
+Get-ADUser -filter * -properties * | where {!$_.emailaddress} | select Name,SamAccountName 
+
+
+#To search for all accounts, we can use -Filter *. The below will search for all accounts that have not logged on in 90 days.
+Get-ADUser -filter * -Properties lastlogondate | where {$_.LastLogonDate -le (get-date).AddDays(-90)} | sort LastlogonDate -Descending |Select-Object Name, SamAccountName, LastlogonDate, ObjectClass | format-table -A
+
+#Pass thru accounts that have not logged on in 90 days and show what will happen if you disable these. Remove whatif if you are sure you want to disable these accounts.
+Get-ADUser -filter * -Properties lastlogondate | where {$_.LastLogonDate -le (get-date).AddDays(-90)} | sort LastlogonDate -Descending | Disable-ADAccount -WhatIf
+
+#Search all accounts that have locked out. 
+Search-ADAccount -LockedOut | FT Name,ObjectClass -A
+# The below will sort by LastlogonDate descending.
+Search-ADAccount -LockedOut | sort LastlogonDate -Descending |Select-Object Name, SamAccountName, LastlogonDate, ObjectClass | format-table -A
+#Search all users, computers, and service accounts that are disabled
+Search-ADAccount -AccountDisabled | FT Name,ObjectClass -A 
+# The below searches account disabled for users only
+Search-ADAccount -AccountDisabled -UsersOnly | FT Name,ObjectClass -A
+#Search all users, computers, and service accounts that are expired.
+Search-ADAccount -AccountExpired | FT Name,ObjectClass -A
+# Search for accounts with Password expired.
+Search-ADAccount -PasswordExpired | FT Name,ObjectClass -A
+
+#An audit requirement can be to identify any user accounts where the password never expires.
+#This will Search for accounts where the password never expires.
+Search-ADAccount –PasswordNeverExpires | Select Name, DistinguishedName
+
+
+#############################################
+Active Directory Groups 
+############################################
+#Get-ADPrincipalGroupMembership, gets the Active Directory groups that have a specified user, computer, group, or service account
+
+Get-ADPrincipalGroupMembership -Identity SmithA
+#Select only the group name and order by name
+Get-ADPrincipalGroupMembership -Identity SmithA |Sort-Object name | Select name |Ft -A 
+
+#We can get the group membership from two users and then compare them.
+
+Get-ADPrincipalGroupMembership -Identity SmithA |Sort-Object name | Select name | out-file c:\test\SmithA.txt
+Get-ADPrincipalGroupMembership -Identity JonesB |Sort-Object name | Select name | out-file c:\test\JonesB.txt
+Compare-Object -ReferenceObject (Get-Content -Path c:\test\SmithA.txt) -DifferenceObject (Get-Content -Path c:\test\JonesB.txt)
+
+#the Get-ADGroupMember cmdlet gets the members of an Active Directory group.  This is good for auditing highly privileged user groups. Members can be users, groups, and computers. The below will get members of the Security group
+
+#select all members of the security group
+Get-ADGroupMember -Identity Security
+#select all members of the security group, display as a table
+Get-ADGroupMember -Identity Security | Select name, objectclass, SamAccountName | FT -A
+#Get members of the Security group including the members of child groups
+Get-ADGroupMember -Identity Security -Recursive
+#Get members of the Security group including the members of child groups, and pipe this to the Get-ADUser cmdlet to display the Get-ADUser selected properties.
+Get-ADGroupMember -identity Security -Recursive | Get-ADUser -Property DisplayName | Select Name, ObjectClass, DisplayName
+
+#######################################
+Active Directory Computers 
+######################################
+
+#Get all the properties of Computer1 in an Active Directory
+Get-ADComputer -Identity Computer1 -Properties *
+
+#If your exchange Servers have exch in the Server name, the below -Filter will get all your exchange servers.
+Get-ADComputer -Filter 'Name -like "*exch*"' -Properties IPv4Address | FT Name,DNSHostName,IPv4Address -A
+
+#You want to do a quick audit on your environment and see what windows versions and service packs are installed, use -Filter *  to check all your computers and use -Properties * to make all properties available.
+Get-ADComputer -Filter * -Properties * | Select Name, DNSHostName, IPv4Address, LastLogonDate, OperatingSystem, OperatingSystemVersion, OperatingSystemServicePack, whenCreated, enabled | FT -A
+
+
+#You want to check which computers in your active directory are online or unreachable/offline.
+# Get all the computer names from Active Directory
+$computers=(Get-ADComputer -Filter *).Name
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+		Write-Output "$computer - Online"
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+
+#Add Computers to your Domain
+#The command below adds the local computer to the LonDomain domain and then restarts the computer to make the change effective
+Add-Computer -DomainName LonDomain -Credential LonDomain\Admin -Restart
+
+
+#This command adds the computers that are listed in the Servers.txt file to the LonDomain domain. The Restart parameter restarts all the newly added computers after the join operation completes.
+Add-Computer -ComputerName (Get-Content c:\test\Servers.txt) -DomainName LonDomain -Credential LonDomain\Admin -Restart
+
+
+#######################################
+Remote Desktop User Sessions
+########################################
+
+#To get a list of currently logged on users on a system, you can use the cmdlet Get-RDUserSession, which gets a list of all user sessions in a collection or in a Remote Desktop deployment.
+Import-Module RemoteDesktop
+Get-RDUserSession
+
+####################################
+Updates HotFix - Get-HotFix
+########################################
+
+#The Get-Hotfix cmdlet gets all hotfixes installed on the local or remote computers. This can let you see what servers in your organisation are up to date or are not compliant from an audit and security perspective.
+
+
+# Gets all hotfixes installed on the local computer.
+Get-HotFix
+
+# Gets all Security hotfixes installed on the local computer.
+Get-HotFix -Description Security*
+
+# Confirm if HotFix KB4498523,KB4503308 are installed, on the local computer.
+Get-HotFix -Id KB4498523,KB4503308
+
+# Supress errors and write console message if HotFix KB957095 not installed, on local computer.
+if (!(Get-HotFix -Id KB957095 -ErrorAction SilentlyContinue)) 
+{ Write-Host "KB957095 not installed" }
+
+# Gets the most recent hotfix installed on a computer.
+(Get-HotFix | Sort-Object -Property InstalledOn)[-1]
+
+# Get hotfixes installed on remote computers. 
+Get-HotFix -ComputerName Server01, Server02 
+
+
+# Confirm if all the computers in Active Directory have a critical security update. Test if each computer is reachable first.
+
+$computers=(Get-ADComputer -Filter *).Name
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+if (!(Get-HotFix -Id KB957095 -ComputerName $computer -ErrorAction SilentlyContinue )) 
+{ Write-Host "The computer [$computer]: KB957095 not installed" }
+		
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+#############################################
+Remote Management PowerShell Remoting
+#############################################
+
+##This will get all computers with srv in the name.
+$computers=(Get-ADComputer -Filter 'Name -like "*srv*"').Name
+Invoke-Command -ComputerName $computers -Scriptblock {$PSVersionTable.psversion} 
+
+
+##This will select all computers from the domain and suppress any errors.
+$computers=(Get-ADComputer -Filter *).Name
+Invoke-Command -ComputerName $computers -Scriptblock {$PSVersionTable.psversion} -ErrorAction SilentlyContinue
+
+
+#Confirm the WinRM service is running
+Get-Service WinRM 
+
+#Confirm the Remote Registry service is running, needed for remote Get-EventLog
+Get-Service “Remote Registry” 
+
+
+#check the default ports you should see TcpTestSucceeded - true
+Test-NetConnection -computer localhost -Port 5985
+Test-NetConnection -computer localhost -Port 5986
+
+
+# check whether PS remoting is enabled, run the below.
+Get-PSSessionConfiguration
+
+
+
+
+Run PowerShell as an Administrator and execute  and review that PS remoting has been enabled.:
+Enable-PSRemoting -Force
+Get-PSSessionConfiguration
+
+#The simple command below demonstrates that the code inside of the -ScriptBlock is executed on the remote computer. The code below shows you the different ways to pass in the computer names, choose whichever method suits your needs best.
+#Specify Computer names
+Invoke-Command -ScriptBlock { hostname } -ComputerName Comp1,Comp2
+
+#Get Computer names from Active Directory
+$computers=(Get-ADComputer -Filter *).Name
+Invoke-Command -ScriptBlock { hostname } -ComputerName $computers
+
+#Get computer names from a text file
+Invoke-Command -ScriptBlock { hostname } -ComputerName (Get-Content "c:\test\servers.txt")
+
+#Specify computer names in a variable
+$computers ='computer1', 'computer2', 'computer3'
+Invoke-Command -ScriptBlock { hostname } -ComputerName $computers
+
+#Will we now look at a few simple useful remote PowerShell  commands to manage a group of computers.
+#Get the newest errors from the Application Event Log from Comp1 and Comp2
+Invoke-Command -ComputerName Comp1,Comp2 - ScriptBlock { Get-EventLog -LogName Application -EntryType Error -Newest 10}
+
+#Confirm failed logon attempts by user SmithA on Server01.
+# Using invoke command
+Invoke-Command -ComputerName Server01 -ScriptBlock{Get-WinEvent -FilterHashTable @{ LogName = ”Security”; ID = "4625"; StartTime = (Get-Date).AddDays(-1) } | Where-Object { ($_.Message -like "*SmithA*") } }
+
+#The below commands enable you to stop Print Spooler services on multiple computers and SQL Server services.
+#Check the status of the Print Spooler Service on multiple computers from a #script file.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {Get-Service -Name Spooler}
+#Stop the Print Spooler Service on multiple computers from a script file.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {Stop-Service -Name Spooler}
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {Start-Service -Name Spooler}
+#confirm service started
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {Get-Service -Name Spooler}
+
+#Stop the SQL Service on SQLVRV01 and SQLVRV01, with verbose reporting
+Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Stop-Service -name MSSQLSERVER -Verbose}
+#Start the SQL Service and Agent on SQLVRV01 and SQLVRV01, with verbose reporting
+Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Start-Service -name MSSQLSERVER -Verbose }
+Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Start-Service -name SQLSERVERAGENT -Verbose }
+
+   The below command shows you how to stop notepad process on multiple computers.
+#Stop the notepad process on multiple Servers from variable
+$Computers ='computer1', 'computer2', 'computer3'
+Invoke-Command -ComputerName $Computers -ScriptBlock {Stop-Process notepad}
+
+
+#You want to query remote computers to find out what processes users are using. You also want to check individual users to see what computers on the network they have logged into and which processes they are running.
+#find all processes used by users on a remote computer, com1
+Invoke-Command -ComputerName com1 -ScriptBlock { Get-Process -IncludeUserName} | FT -A
+#find all processes used on remote computers by user SmithA
+Invoke-Command -ComputerName com1,com2,com3 -ScriptBlock { Get-Process -IncludeUserName | Where-Object { $_.UserName -match "SmithA"}} | FT -A
+#find all processes used on remote computers by user SmithA with explorer process. Has or had a locally logged on session.
+Invoke-Command -ComputerName com1,com2,com3 -ScriptBlock { Get-Process explorer -IncludeUserName | Where-Object { $_.UserName -match "SmithA"}} | FT -A
+#find all processes used on remote computers by user SmithA using a explorer process. Has or had a locally logged on session. Supress errors. 
+Invoke-Command -ComputerName com1,com2,com3 -ScriptBlock { Get-Process explorer -IncludeUserName | Where-Object { $_.UserName -match "SmithA"}} -ErrorAction SilentlyContinue| FT -A
+
+#An audit is required to get all members of the local administrators group on remote servers. In the example with pass in the server names using the servers.txt file.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") ScriptBlock { Get-LocalGroupMember -Group "Administrators"} |Select PScomputername,name,objectclass | FT -A
+
+#Confirm remote computers have restarted on all the servers in the servers.txt file.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock { Get-CimInstance -ClassName Win32_OperatingSystem } |Select PScomputername, LastBootUpTime | FT -A
+
+
+#Confirm patches  installed on all the computers in Active directory.
+#Confirm the latest hotfix applied on servers in Active Directory- where all servers have srv in the name.
+Invoke-Command -ComputerName (Get-ADComputer -Filter 'Name -like "*srv*"').Name -ScriptBlock {(Get-HotFix | Sort-Object -Property InstalledOn)[-1]} -ErrorAction SilentlyContinue | Select PSComputername, HotfixID, InstalledOn | FT -A
+
+#Find all computers missing a hotfix and add name to text file.
+(Get-ADComputer -Filter *).Name | Foreach-Object {If (!(Get-Hotfix -ID "KB957095" -ComputerName $_ -ErrorAction SilentlyContinue)) {Add-Content $_ -Path c:\test\ServersmissingKB957095.txt}}
+
+
+#Run a script on all the computers listed in a text file. This example uses the Invoke-Command cmdlet to run the script we created earlier GetProcessSortByMemory.ps1 on all the computers listed in the Servers.txt file. The command uses the FilePath parameter to specify the script file. This command lets you run the script on the remote computers, even if the script file is not accessible to the remote computers.
+Invoke-Command -ComputerName (Get-Content Servers.txt) -FilePath C:\test\GetProcessSortByMemory.ps1
+
+
+################################
+Enter-PSSession
+################################
+
+New-PSSession - creates a persistent connection to a remote server and is generally used when you have a series of commands to run on multiple servers at various stages of a larger script\workflow.
+
+#The commands below run the Enter-PSSession cmdlet to start an interactive session with Serv01, a remote computer. When the session starts, the command prompt changes to include the computer name. The second command gets the processes and redirects the output to the Process.txt file. The third  command gets the services and redirects the output to the services.txt file. The fourth  command gets the last restart time and redirects the output to the LastReboot.txt file. The fifth  command gets the details about the last restart time and redirects the output to the Eventid_1074.txt file. The last command uses the Exit keyword to end the interactive session and close the connection. If you check on the remote computer, you will find all four text files exist there and not on the local computer.
+
+PS C:\> Enter-PSSession -ComputerName Serv01
+[Serv01]: PS C:\>
+[Serv01]: PS C:\> Get-Process > C:\test\Process.txt
+[Serv01]: PS C:\> Get-Service > C:\test\Service.txt
+[Serv01]: PS C:\> Get-CimInstance -ClassName Win32_OperatingSystem | select LastBootUpTime > C:\test\LastReboot.txt
+[Serv01]: PS C:\> Get-WinEvent -FilterHashtable @{Logname='System';ID=1074}  -MaxEvents 1 | FT -A -wrap > C:\test\Eventid_1074.txt
+[Serv01]: PS C:\> exit
+PS C:\>
+
+
+You can also use a Session parameter, in this example command below we use the variable $s to hold the session details and use Enter-PSSession to run the interactive session.
+PS C:\> $s = New-PSSession -ComputerName Serv01
+PS C:\> Enter-PSSession -Session $s
+[Serv01]: PS C:\>
+
+
+#########################################
+Functions
+##########################################
+#The Function below will get all the IP addresses in use on the local computer.
+
+Function Get-IPaddresses {
+
+Get-CimInstance -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=$true |
+  Select-Object -ExpandProperty IPAddress }
+
+
+#The Function below is based on the audit code we created earlier. This will return details of the local computer.
+Function Get-ComputerAudit {
+
+        $OS = Get-CimInstance   Win32_OperatingSystem
+        $CPU = Get-CimInstance  Win32_Processor
+        $MEM = Get-CimInstance  Win32_PhysicalMemory
+        $installD = Get-CimInstance  Win32_OperatingSystem
+             $AuditTable = [PSCustomObject]@{
+             ComputerName = Hostname
+             OperatingSystem = $OS.Caption
+            "Memory(GB)" = $MEM.Capacity/1GB
+             CPU = $CPU.Name
+             InstallDate =$installD.InstallDate
+
+
+        }  
+ return $AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A 
+
+}
+
+
+############################################
+PowerShell Verbose and Errors
+############################################
+#Stopping and Starting the BITS service
+Start-Service -Name BITS
+Stop-Service -Name BITS
+
+#Stopping and Starting the BITS service with -verbose reporting
+Start-Service -Name BITS -verbose
+Stop-Service -Name BITS -verbose
+
+# Change the ErrorActionPreference to 'Continue'
+$ErrorActionPreference = 'Continue'
+# Generate a non-terminating error and continue processing the script.
+Write-Error -Message  'Hal Test Error' ; Write-Host 'Hello Dave'
+
+# Change the ErrorActionPreference to 'Stop'
+$ErrorActionPreference = 'Stop'
+# Generate a non-terminating error and continue processing the script.
+Write-Error -Message  'Hal Test Error' ; Write-Host 'Hello Dave'
+
+# Change the ErrorActionPreference to 'SilentlyContinue'
+$ErrorActionPreference = 'SilentlyContinue'
+# Generate an error message
+Write-Error -Message 'Hal Test Error' ; Write-Host 'Hello Dave'
+
+
+##If you want to select all computers from the domain and suppress any errors, run.
+$computers=(Get-ADComputer -Filter *).Name
+Invoke-Command -ComputerName $computers -Scriptblock {$PSVersionTable.psversion} -ErrorAction SilentlyContinue
+
+
+#The code below will write a file in the test folder. To execute the catch block,  add a path that does not exist.
+try {
+    new-item -path c:\test  -name Testfile01.txt -itemtype file -ErrorAction Stop
+Write-Output "File created!!"
+}
+catch {
+    Write-Output "Error - $($_.Exception.Message)"
+}
+
+#This will be useful in checking for Computers no longer in use but still present in Active Directory or Computers that are down or unreachable that should not be. 
+
+# To ping all computer names from Active Directory
+$computers=(Get-ADComputer -Filter *).Name
+
+foreach ($computer in $computers) {
+	try {
+		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
+		Write-Output "$computer - Online"
+	}
+	catch {
+		Write-Output "$computer - $($_.Exception.Message)"
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
