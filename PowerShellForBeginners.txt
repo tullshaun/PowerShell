@@ -24,7 +24,9 @@ Start-Transcript -Path "C:\test\transcript0.txt" -NoClobber
 #Alternatively, you can just type in the below, and it will save the transcript file to a default location. 
 Start-Transcript 
 
-
+#########################################
+PowerShell Versions
+#########################################
 Get-Host | Select-Object Version
 
 $PSVersiontable
