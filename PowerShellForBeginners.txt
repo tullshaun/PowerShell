@@ -390,8 +390,14 @@ Add-Content c:\test\temp\hal.txt " I'm sorry, Dave, I'm afraid I can't do that."
 #Display details of the items in the test folder.
 Get-ChildItem c:\test
 
-#Display details of the items in the test folder and any subfolders.
+#Display details of the items in the test folder and any subfolders using -recurse.
 Get-ChildItem C:\test -Recurse
+
+#Display details of the items in the test folder with a size greater than –gt 10000.
+get-childitem  c:\test | sort length | where {$_.length –gt 10000} | select name,length 
+
+#Display details of the items in the test folder and any subfolders using -recurse with a size greater than –gt 10000. 
+get-childitem  c:\test -Recurse -Force | sort length | where {$_.length –gt 10000} | select name,length 
 
 #get the sum size of all the files in the folder Test.
 Get-ChildItem -Path c:\test | Measure-Object -Sum Length 
