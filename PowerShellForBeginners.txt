@@ -393,6 +393,12 @@ Get-ChildItem c:\test
 #Display details of the items in the test folder and any subfolders using -recurse.
 Get-ChildItem C:\test -Recurse
 
+#Display details of the items in the test folder and using the Include parameter to specify .txt files.
+Get-ChildItem -Path c:\test\* -Include *.txt | sort length | select name, length 
+
+#Display details of the items in the test folder and any subfolders using -recurse and using the Include parameter to specify .txt files.
+Get-ChildItem -Path c:\test\* -Include *.txt -Recurse -Force | sort length | select name,length
+
 #Display details of the items in the test folder with a size greater than –gt 10000.
 get-childitem  c:\test | sort length | where {$_.length –gt 10000} | select name,length 
 
