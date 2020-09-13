@@ -1,5 +1,5 @@
 #############################################################################################################################################################################
-                                                                PowerShell: Beginners Guide Learn with Real World Scripts
+                                                               PowerShell For Beginners: Learn Quickly with Real World Scripts
 ###############################################################################################################################################################################
 
 
@@ -567,6 +567,12 @@ Restart-Service -Name BITS -Verbose
 #Get all services and displays dependent services
 Get-Service -DependentServices | Select name, status, displayname, DependentServices |FT -A
 
+#By default only 4 items are shown in an array. If there are more then 4 dependent items you will see an ellipsis ...
+#To see all of the dependent items we use the $FormatEnumerationLimit preference variable, as below and set it to -1
+
+$FormatEnumerationLimit = -1
+Get-Service -DependentServices | Select name, status, displayname, DependentServices |FT -A
+
 #You have been asked to stop the SQL Server.
 #Find any services if they are dependent on the MSSQLSERVER Service
 Get-Service MSSQLSERVER -DependentServices
@@ -891,7 +897,7 @@ $WebContent = Invoke-WebRequest "https://support.microsoft.com/en-gb/help/13853/
 $WebContent
 
 #view the links
-$WebResponse.links 
+$WebContent.links 
 
 #view inner text and href
 $WebContent.links | select innerText,href | ft
