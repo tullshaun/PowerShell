@@ -1044,7 +1044,7 @@ New-ADUser -Name 'Ernst Blofeld' -SamAccountName 'eblofeld' -AccountPassword $Pa
 
 #bulk import users from a csv file. Add the correct OU for your environment, and this will work
 #This is an example csv file, ideally you will also add email Department and JobTitle etc.
-# csv contents as below, the encoding of the csv must be set to UTF-8.
+# csv contents as below, save this in the c:\test folder  as adusers.csv   the encoding of the csv must be set to UTF-8.
 
 FirstName,LastName,SamAccountName,Password,OU
 Test,User1,testuser1,Password2020,"CN=Users,DC=DOMVMONE,DC=COM"
