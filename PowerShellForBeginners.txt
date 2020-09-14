@@ -1034,6 +1034,36 @@ Search-ADAccount -PasswordExpired | FT Name,ObjectClass -A
 #This will Search for accounts where the password never expires.
 Search-ADAccount –PasswordNeverExpires | Select Name, DistinguishedName
 
+####################### adding and removing AD users#################################
+
+#Adding AD users we can use the New-ADUser cmdlet. The 2nd command forces the user to change password at logon using the -ChangePasswordAtLogon parameter.
+#first we specify as password as below then we run the commands to add the two users.
+$Password = ConvertTo-SecureString "Password2020" –AsPlainText –Force
+New-ADUser -Name 'James Bond' -SamAccountName 'jbond' -AccountPassword $Password -Enabled $True
+New-ADUser -Name 'Ernst Blofeld' -SamAccountName 'eblofeld' -AccountPassword $Password -Enabled $True -ChangePasswordAtLogon $true
+
+#bulk import users from a csv file. Add the correct OU for your environment, and this will work
+#This is an example csv file, ideally you will also add email Department and JobTitle etc.
+# csv contents as below, the encoding of the csv must be set to UTF-8.
+
+FirstName,LastName,SamAccountName,Password,OU
+Test,User1,testuser1,Password2020,"CN=Users,DC=DOMVMONE,DC=COM"
+Test,User2,testuser2,Password2020,"CN=Users,DC=DOMVMONE,DC=COM"
+Test,User3,testuser3,Password2020,"CN=Users,DC=DOMVMONE,DC=COM"
+Test,User4,testuser4,Password2020,"CN=Users,DC=DOMVMONE,DC=COM"
+
+#command to import the above test users from the csv file into active directory as users.
+Import-csv c:\test\adusers.csv | ForEach-Object {
+         New-ADUser -Name $($_.FirstName + " " + $_.LastName) -GivenName $_.FirstName -Surname $_.LastName -DisplayName $($_.FirstName + " " + $_.LastName) -SamAccountName $_.SamAccountName -Path $_.OU -AccountPassword $(ConvertTo-SecureString $_.Password -AsPlainText -Force) -Enabled $True -ChangePasswordAtLogon $true }
+
+# confirm test users aded as expected
+Get-ADUser -Filter 'Name -like "*Test*"' | Format-Table Name,SamAccountName -A
+#if you want to remove added test users check with whatif first, to see which users will be removed 
+Get-ADUser -Filter 'Name -like "*Test*"' | Remove-ADUser -WhatIf
+#if you are confident the right users will be removed and you do not want to be prompted for each user to be removed, use -Confirm:$False 
+Get-ADUser -Filter 'Name -like "*Test*"' | Remove-ADUser -Confirm:$False
+
+
 
 #############################################
 Active Directory Groups 
