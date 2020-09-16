@@ -12,7 +12,7 @@
 
 This book will allow you to unleash the power of PowerShell and allow you to automate many of your day to day administration tasks.
 
-With the recent development of PowerShell becomming open source and enabled for cross-platform (Windows, macOS, and Linux) support,
+With the recent development of PowerShell becoming open source and enabled for cross-platform (Windows, macOS, and Linux) support,
 Powershell is now a technology that administrators must learn to become more efficent and productive.
 
 
