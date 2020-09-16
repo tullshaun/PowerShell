@@ -808,7 +808,7 @@ Get-PSReadLineOption
 #To view the save path location for the history files.
 (Get-PSReadlineOption).HistorySavePath
 
-#To view the history in PowerShell run.
+#To view the history in PowerShell run. cat is the alias for Get-Content. 
 cat (Get-PSReadlineOption).HistorySavePath
 
 #The Get-History cmdlet gets the session history, that is, the list of commands entered during the current session.
