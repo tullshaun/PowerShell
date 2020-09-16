@@ -1,9 +1,6 @@
 # PowerShell
-PowerShell
-
 
 ###  PowerShell For Beginners: Learn Quickly with Real World Scripts
-
 
 
 
