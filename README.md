@@ -20,7 +20,7 @@ If you are looking for a practical PowerShell book, where you can learn Powershe
 The layout of this book is designed so the first half will guide you step by step by using PowerShell commands and gradually build them out. The second half will go over the various areas of systems and show you, how you can use and apply PowerShell commands to manage your IT environment.
 
 
-By reading this book and running the commands, you will be able to get a overall view of what PowerShell can do. The aim is to get you up and running as rapidly as possible, with example code provided for the area you are interested in. So, if you want the ability to manage your IT environment from a command-line shell environment, you want to automate many of your manual tasks, and you want to learn a new skill. Then dive in and let’s get started.
+By reading this book and running the commands, you will be able to get an overall view of what PowerShell can do. The aim is to get you up and running as rapidly as possible, with example code provided for the area you are interested in. So, if you want the ability to manage your IT environment from a command-line shell environment, you want to automate many of your manual tasks, and you want to learn a new skill. Then dive in and let’s get started.
 
 
 
