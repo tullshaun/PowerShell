@@ -1417,6 +1417,13 @@ Function Get-ComputerAudit {
 }
 
 
+
+###More details on functons, run the below ######
+
+Get-Help about_Functions
+
+
+
 ############################################
 PowerShell Verbose and Errors
 ############################################
@@ -1476,8 +1483,8 @@ foreach ($computer in $computers) {
 
 
 
-
-
+##Run the below More examples here #####
+Get-Help about_Try_Catch_Finally
 
 
 
