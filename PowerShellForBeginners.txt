@@ -348,6 +348,37 @@ $computers ='computer1', 'computer2', 'computer3'
 $computers | ForEach-Object {
 Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $_ | select LastBootUpTime}
 
+###########################
+PowerShell If Statement
+###########################
+
+#this will check if the file exists in the location c:\test\SqlAuditCmd.txt 
+$FileExists = Test-Path -Path c:\test\SqlAuditCmd.txt 
+If ($FileExists -eq $True) {Write-Host "File Exists" -ForegroundColor green} Else {Write-Host "Missing files" -ForegroundColor red -BackgroundColor white}
+
+#this will check if the file exists and if it is not older than 2 hours
+$now = get-date
+$FileExists = Test-Path -Path c:\test\SqlAuditCmd.txt -NewerThan $now.AddMinutes(-120)
+If ($FileExists -eq $True) {Write-Host "File Exists" -ForegroundColor green} Else {Write-Host "Missing files" -ForegroundColor red -BackgroundColor white}
+
+
+#This adds SQL Services not (-ne) running to the $services variable. If this is true (there are services not running) then the length of the $services variable will be greater (-gt) than 0
+
+$services = Get-Service | where{$_.Name -like "*sql*" -and $_.Status -ne "Running" }
+if ($services.Length -gt 0)
+{write-host "Warning! These Services are not running: " $services -ForegroundColor red -BackgroundColor white}
+
+#In this example we will start any stopped SQL services
+$services = Get-Service | where{$_.Name -like "*sql*" -and $_.Status -ne "Running" }
+if ($services.Length -gt 0)
+{write-host "Warning! These Services are not running: " $services -ForegroundColor red -BackgroundColor white
+$services | start-service -verbose
+}
+
+# Get more examples for Test-Path
+Get-Help Test-Path -examples
+
+
 
 ###########################
 Comparing Objects
@@ -1198,6 +1229,9 @@ Invoke-Command -ComputerName $computers -Scriptblock {$PSVersionTable.psversion}
 #Confirm the WinRM service is running
 Get-Service WinRM 
 
+#Check the status of the WinRM service and the operating system version on a remote computer
+Test-WSMan -ComputerName "server01" -Authentication default 
+
 #Confirm the Remote Registry service is running, needed for remote Get-EventLog
 Get-Service “Remote Registry” 
 
@@ -1213,7 +1247,7 @@ Get-PSSessionConfiguration
 
 
 
-Run PowerShell as an Administrator and execute  and review that PS remoting has been enabled.:
+#Run PowerShell as an Administrator and execute  and review that PS remoting has been enabled.:
 Enable-PSRemoting -Force
 Get-PSSessionConfiguration
 
