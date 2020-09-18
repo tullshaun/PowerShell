@@ -469,7 +469,7 @@ $path ="C:\test"
 (get-acl -Path $path).access  | Select $path,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto 
 
 #Now we can export the results to a csv file. As these are audit type events we add todays date to the csv file as below.
-(Get-Acl -Path C:\test).Access | Select IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | export-csv "c:\test\foldersecurity_$(get-date -f yyyy-MM-dd).csv" -notypeinformation
+(Get-Acl -Path C:\test).Access | Select IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | export-csv "c:\test\foldersecurity_$(get-date -f dd-MM-yyyy).csv" -notypeinformation
 
 #if required for an audit on every folder,subfolder and file we can use the below.
 Get-ChildItem c:\test -Recurse -force | ForEach-Object {(get-acl $_.fullname).access | Select $_.fullname,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto }
