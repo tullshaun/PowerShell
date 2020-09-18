@@ -452,6 +452,40 @@ Get-ChildItem C:\test | Select Name, @{Name="Size_In_KB";Expression={$_.Length /
 Get-ChildItem C:\test -Recurse -Force | Select Name, @{Name="Size_In_KB";Expression={$_.Length / 1Kb}}
 
 
+
+#The Get-Acl cmdlet returns ACL security permission rights of a file, folder or registry key. The ACL specifies the permissions that users and user groups have to access the resource
+
+# Get-Acl details on the C:\test folder, review the details returned. 
+Get-Acl -Path C:\test
+
+# We can add format-table -auto -wrap, so we can see the full access details 
+Get-Acl -Path C:\test | format-table -auto -wrap
+
+#We can modify this further and specify the columns we are interested in as below
+(Get-Acl -Path C:\test).Access | Select IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto 
+
+#We can also specify a variable $path to hold the path details as below.
+$path ="C:\test"
+(get-acl -Path $path).access  | Select $path,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto 
+
+#Now we can export the results to a csv file. As these are audit type events we add todays date to the csv file as below.
+(Get-Acl -Path C:\test).Access | Select IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | export-csv "c:\test\foldersecurity_$(get-date -f yyyy-MM-dd).csv" -notypeinformation
+
+#if required for an audit on every folder,subfolder and file we can use the below.
+Get-ChildItem c:\test -Recurse -force | ForEach-Object {(get-acl $_.fullname).access | Select $_.fullname,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto }
+
+
+
+
+
+
+
+
+
+
+
+
+
 #If you want to now remove the temp folder, follow the below commands.
 #if you have items in the folder you will be asked for a confirmation to delete the folder.
 Remove-Item c:\test\temp 
