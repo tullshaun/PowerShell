@@ -47,10 +47,17 @@ PowerShell Commands:  Get-Command
 
 #Get-Command returns the cmdlets, functions, and aliases in PowerShell.
 Get-Command
-# Using a wildcard * returns all the available commands.
+# Using a wildcard * as below, gets all commands of all types on the local computer, including executable files.
 Get-Command * 
-# The use of wildcards * as below will return all commands that have process in the name.
+
+#find any command related to printing using wildcards *.
+Get-Command –Name *print*
+
+#The use of wildcards * as below will return all commands that have process in the name.
 Get-Command –Name *process*
+
+#To find more examples use the below command.
+Get-Help Get-Command -examples
 
 ############################
 PowerShell Alias
@@ -85,6 +92,8 @@ Get-Help Get-Process
 Get-Help Get-Process -ShowWindow
 # The below command will give you examples of how to run the cmdlet.
 Get-Help Get-Process -examples
+# The below command will display the descriptions of all parameters you can use with the cmdlet.
+Get-Help Get-Process -Parameter *
 # The below command will take you to the PowerShell online help files.
 Get-Help Get-Process -online
 
@@ -430,6 +439,18 @@ New-Item -Path 'C:\test\temp\hal.txt' -ItemType File
 
 #This command adds text to the hal.txt file
 Add-Content c:\test\temp\hal.txt " I'm sorry, Dave, I'm afraid I can't do that."
+
+#This command creates a new folder called Hal in C:\test\
+
+New-Item -Path 'C:\test\Hal' -ItemType Directory
+
+#The Copy-Item cmdlet will copy the contents from c:\test\temp folder
+
+Copy-Item -Path "C:\test\Temp\*" -Destination "C:\test\Hal" -Force -Verbose
+
+#This command adds text to the copied hal.txt file
+
+Add-Content c:\test\Hal\hal.txt "Open the pod bay doors HAL."
 
 #Display details of the items in the test folder.
 Get-ChildItem c:\test
