@@ -108,6 +108,8 @@ Comments in PowerShell
 "Add Title here for your text:  Generated $(Get-Date)"
 "#"*100
 
+#Use the below command to get full details on comment based help
+Get-Help about_Comment_Based_Help
 
 ################################
 Write-Output & Write-Host
