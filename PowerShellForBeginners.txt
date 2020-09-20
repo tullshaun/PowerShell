@@ -589,7 +589,7 @@ Get-WinEvent -FilterHashTable @{LogName='security';ID=’4624’ ; StartTime = (
 Get-WinEvent -ComputerName -FilterHashTable @{ LogName = ”Security”; ID = ‘4625’} -MaxEvents 100 | FT -A -wrap 
 
 ########################
-Processes
+Process Commands
 #######################
 
 #View all processes
@@ -660,6 +660,7 @@ Get-Process | Sort WS –Descending| Format-Table `
 
 ###################################
 Services
+Windows Services with PowerShell
 ##################################
 
 #get all services
@@ -735,7 +736,7 @@ Get-Service -ComputerName Computer1 -Name BITS | Set-Service -Status Running
 
 
 ########################
-Get-WmiObject
+Get Computer Information: Get-WmiObject
 ########################
 
 #Note the shorthand for Get-WmiObject -Class is just to use gwmi.
@@ -769,7 +770,7 @@ Get-WmiObject -Class Win32_Groupuser -Computer Comp1 | Where { $_.GroupComponent
 
 
 ##############################
-Get-CimInstance
+Get Computer Information: Get-CimInstance
 ##############################
 
 Get-CimInstance -Class Win32_Bios | Format-List -Property *
