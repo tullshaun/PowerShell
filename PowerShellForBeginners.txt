@@ -507,6 +507,19 @@ $path ="C:\test"
 #if required for an audit on every folder,subfolder and file we can use the below.
 Get-ChildItem c:\test -Recurse -force | ForEach-Object {(get-acl $_.fullname).access | Select $_.fullname,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto }
 
+##search files 
+# create 5 test files with the text password
+While ($i -le 5) {New-Item -Path c:\test\temp -Name "testtextfile$i.txt" -ItemType "file" -Value "Password" 
+$i++}
+
+#To search all text files for the word password in the the c:\test\ folder we can use the below command.
+Select-String -Path c:\test\*.txt -Pattern 'password'
+#To search in c:\test\ and all subfolders for .txt files, we can use the below command.
+Get-ChildItem -Path c:\test\*.txt  -Recurse | Select-String 'password'  | Select Path,Linenumber,Line |ft -a -w
+#using -List finds the first instance of matching text in a file and is the most efficient way to retrieve a list of files. Only returning path in this example.
+Get-ChildItem -Path c:\test\*.txt  -Recurse | Select-String 'password' -List | Select Path
+
+
 ### Remove-Item 
 
 #If you want to now remove the temp folder, follow the below commands.
