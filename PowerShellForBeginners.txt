@@ -508,6 +508,10 @@ $path ="C:\test"
 Get-ChildItem c:\test -Recurse -force | ForEach-Object {(get-acl $_.fullname).access | Select $_.fullname,IdentityReference,FileSystemRights,AccessControlType,IsInherited,InheritanceFlags | format-table -auto }
 
 ##search files 
+
+#First we create a variable $i and assign it =1
+$i =1
+
 # create 5 test files with the text password
 While ($i -le 5) {New-Item -Path c:\test\temp -Name "testtextfile$i.txt" -ItemType "file" -Value "Password" 
 $i++}
