@@ -527,13 +527,7 @@ Get-ChildItem -Path c:\test\*.txt  -Recurse | Select-String 'password' -List | S
 ### Remove-Item 
 
 #If you want to now remove the temp folder, follow the below commands.
-#if you have items in the folder you will be asked for a confirmation to delete the folder.
-Remove-Item c:\test\temp 
-#to delete a folder and sub-items without a confirmation use -Recurse. 
-Remove-Item c:\test\temp -Recurse
-
-
-#The below example shows you what would happen if the cmdlet runs, use the -WhatIf parameter.
+#Using the -WhatIf parameter as below, shows you what would happen if the Remove-Item cmdlet runs. 
 Remove-Item c:\test\temp -WhatIf
 
 #To be prompted for a confirmation before a delete use the -Confirm parameter.
