@@ -889,6 +889,20 @@ foreach ($computer in $computers) {
 $AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A
 
 
+##############################
+Get Computer Information: Get-ComputerInfo
+##############################
+
+#This command wll get all the system and operating system properties from the computer.
+Get-ComputerInfo
+
+#This command will get all the operating system properties from the computer.
+Get-ComputerInfo -Property "os*"
+
+#This will get specifc computer properties of interest for an audit.
+Get-ComputerInfo | Select sName,WindowsProductName,CsTotalPhysicalMemory,CsProcessors,CsNumberOfProcessors,CsPhyicallyInstalledMemory,CsModel
+
+
 ############################
 Computer Restart
 ###########################
