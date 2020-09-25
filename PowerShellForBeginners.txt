@@ -1286,7 +1286,7 @@ Get-GPResultantSetOfPolicy -User "metron\RipleyE" -ReportType Html -Path "c:\tes
 
 # Get all the GPO's applied to the Computer in the metron domain
 
-Get-GPResultantSetOfPolicy -Computer "metron\LonDT001" -ReportType HTML --Path "c:\test\ComputerReport.html"
+Get-GPResultantSetOfPolicy -Computer "metron\LonDT001" -ReportType HTML -Path "c:\test\ComputerReport.html"
 
 
 #We can review the GPO applied to the desktops by running the below command. When it was created, modified etc.
@@ -1336,8 +1336,9 @@ qwinsta ripleyE /server:Serv01
 #We can use a ForEach loop to display information about all active sessions on a range of servers.
 
 $Servers ='Serv01','Serv02'
-
-ForEach ($Server in Servers) { $user = (qwinsta /server:$Server) foreach($i in User) { write-host $1,$Server } }
+ForEach ($Server in Servers) 
+{ $user = (qwinsta /server:$Server)
+foreach($i in User) { write-host $1,$Server } }
 
 
 
