@@ -1014,6 +1014,24 @@ Get-NetIPConfiguration
 
 Get-NetIPConfiguration -All
 
+
+Get-NetTCPConnection
+
+#The Get-NetTCPConnection cmdlet gets current TCP connections. Use this cmdlet to view TCP connection properties such as local or remote IP address, local or remote port, and #connection state. Note: This also shows owning process, so we can link the connections to the process running.
+
+#This command gets all current TCP connections.
+Get-NetTCPConnection
+
+#This example gets information about all established TCP connection
+Get-NetTCPConnection -State Established
+
+#This example gets information about anything that’s listening from any remote address. The 0.0.0.0 IP address is reserved to specify all IP addresses on the local machine.
+Get-NetTCPConnection -State Listen | where RemoteAddress -eq "0.0.0.0"
+
+#This example gets running processes and their port number.
+Get-NetTCPConnection | where {$_.State -eq 'Listen'} | select -Property LocalAddress, @{name="Process";Expression={$psid = $_.OwningProcess; (Get-Process | where {$_.Id -eq $psid }).Name + ', ' + $_.OwningProcess}}, LocalPort,state,RemotePort | sort -property Process | ft -a
+
+
 #gets the basic network adapter properties
 Get-NetAdapter
 
@@ -1258,6 +1276,37 @@ Add-Computer -DomainName LonDomain -Credential LonDomain\Admin -Restart
 #This command adds the computers that are listed in the Servers.txt file to the LonDomain domain. The Restart parameter restarts all the newly added computers after the join operation completes.
 Add-Computer -ComputerName (Get-Content c:\test\Servers.txt) -DomainName LonDomain -Credential LonDomain\Admin -Restart
 
+#######################################
+Active Directory Group Policy
+#######################################
+
+# Get all the GPO's applied to the user in the metron domain.
+
+Get-GPResultantSetOfPolicy -User "metron\RipleyE" -ReportType Html -Path "c:\test\UserReport.html"
+
+# Get all the GPO's applied to the Computer in the metron domain
+
+Get-GPResultantSetOfPolicy -Computer "metron\LonDT001" -ReportType HTML --Path "c:\test\ComputerReport.html"
+
+
+#We can review the GPO applied to the desktops by running the below command. When it was created, modified etc.
+
+Get-GPO -Name "Desktops"
+
+#This command get all the GPOs in the metron.com domain.
+
+Get-GPO -All -Domain "metron.com"
+
+#This command get all the GPOs in the domain.
+
+Get-GPO -All
+
+
+#The below command will generate a detailed HTML report for the Desktops GPO
+
+Get-GPOReport -Name "Desktops" -ReportType HTML -Path "C:\test\GPODesktopsReport.html"
+
+
 
 #######################################
 Remote Desktop User Sessions
@@ -1266,6 +1315,33 @@ Remote Desktop User Sessions
 #To get a list of currently logged on users on a system, you can use the cmdlet Get-RDUserSession, which gets a list of all user sessions in a collection or in a Remote Desktop deployment.
 Import-Module RemoteDesktop
 Get-RDUserSession
+
+
+#Will return information on any user who is locally logged on to servers, Serv01,Serv02.
+
+Get-WmiObject –Class Win32_ComputerSystem -ComputerName Serv01,Serv02 | Select PScomputername,UserName
+
+Get-CimInstance –ClassName Win32_ComputerSystem -ComputerName Serv01,Serv02 | Select PScomputername,UserName
+
+#In PowerShell we can use the Windows Command, qwinsta to return information about sessions on a Remote Desktop Session Host server. The list includes information not only #about active sessions but also about other sessions that the server runs.
+
+#The command below will display information about all active sessions on server Serv01.
+
+qwinsta /server:Serv01
+
+#The command below will return any active sessions by user ripleyE on server Serv01.
+
+qwinsta ripleyE /server:Serv01
+
+#We can use a ForEach loop to display information about all active sessions on a range of servers.
+
+$Servers ='Serv01','Serv02'
+
+ForEach ($Server in Servers) { $user = (qwinsta /server:$Server) foreach($i in User) { write-host $1,$Server } }
+
+
+
+
 
 ####################################
 Updates HotFix - Get-HotFix
@@ -1404,6 +1480,20 @@ Invoke-Command -ComputerName com1,com2,com3 -ScriptBlock { Get-Process explorer 
 #find all processes used on remote computers by user SmithA using a explorer process. Has or had a locally logged on session. Supress errors. 
 Invoke-Command -ComputerName com1,com2,com3 -ScriptBlock { Get-Process explorer -IncludeUserName | Where-Object { $_.UserName -match "SmithA"}} -ErrorAction SilentlyContinue| FT -A
 
+
+#Next we will use the Windows Command qwinsta, and using the  Invoke-Command cmdlet, we can return information about sessions on Remote Desktop Session Host servers
+#Get Remote Desktop Sessions on Serv01
+Invoke-Command -ComputerName Serv01 -ScriptBlock {qwinsta}
+
+#Get Remote Desktop Sessions by user ripleyE on Serv01
+Invoke-Command -ComputerName Serv01 -ScriptBlock {qwinsta ripleyE}
+
+#Get all Remote Desktop Sessions from a list of servers.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {$user = (qwinsta)
+foreach($i in $user)
+{ write-host $1, $env:computername }}
+
+
 #An audit is required to get all members of the local administrators group on remote servers. In the example with pass in the server names using the servers.txt file.
 Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") ScriptBlock { Get-LocalGroupMember -Group "Administrators"} |Select PScomputername,name,objectclass | FT -A
 
@@ -1456,6 +1546,9 @@ Function Get-IPaddresses {
 
 Get-CimInstance -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=$true |
   Select-Object -ExpandProperty IPAddress }
+ 
+#To run the function
+Get-IPaddresses
 
 
 #The Function below is based on the audit code we created earlier. This will return details of the local computer.
@@ -1479,11 +1572,29 @@ Function Get-ComputerAudit {
 }
 
 
+#To run the function
+Get-ComputerAudit
 
+
+
+## create the Get-RdsUser function
+
+Function Get-RdsUser{$rdsuser = (qwinsta)
+foreach($i in $rdsuser) { write-host $1, $env:computername } }
+
+#To run the function
+Get-RdsUser
+
+#A great feature of PowerShell, is the ability to run functions that exist only on the local computer against remote computers. 
+#Command will return session information from serv01,serv02
+
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-RdsUser} -ErrorAction SilentlyContinue
+
+#I would advise looking at the Microsoft PowerShell documentation for more advanced uses of functions. As usual a great start will be running the below commands.
 ###More details on functons, run the below ######
-
 Get-Help about_Functions
 
+Get-Help about_Functions_Advanced
 
 
 ############################################
