@@ -56,6 +56,10 @@ Get-Command –Name *print*
 #The use of wildcards * as below will return all commands that have process in the name.
 Get-Command –Name *process*
 
+#The next example will search for Active Directory cmdlets; We can also search on the verb or noun of cmdlets.
+#The noun for Active Directory cmdlets, start with AD, so we can use the below.
+Get-Command –Noun AD*
+
 #To find more examples use the below command.
 Get-Help Get-Command -examples
 
@@ -1130,6 +1134,39 @@ Get-Service MSSQLSERVER | Foreach { Stop-Service $_.DependentServices -passthru}
 
 #If you want to start SQL and all  dependent services as well use the below.
 Get-Service MSSQLSERVER | Foreach { Start-Service $_.name -passthru; Start-Service $_.DependentServices -passthru}
+
+
+
+##########################################
+Active Directory 
+###########################################
+
+#Get Active Directory Cmdlets
+#Import the Active Directory Module
+
+Import-Module ActiveDirectory
+
+#Find all the active directory cmdlets
+Get-Command –Noun AD*
+
+#Find all the active directory cmdlets, the below is the recommended way
+Get-Command -Module ActiveDirectory
+
+#Now lets get some information about the Domain.
+#Get Active Domain information for the domain.
+Get-ADDomain
+
+#Get all the domain controllers
+Get-ADDomainController -Filter *
+
+#Get the DHCP servers
+Get-DhcpServerInDC
+
+#The Get-DnsServer cmdlet retrieves a Domain Name System (DNS) server configuration.
+Get-DnsServer
+
+#Get all the Exchange servers in the organization
+Get-ExchangeServer | Format-List
 
 ##########################################
 Active Directory Users 
