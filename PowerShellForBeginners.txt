@@ -1021,20 +1021,20 @@ Get-NetIPConfiguration -All
 
 Get-NetTCPConnection
 
-#The Get-NetTCPConnection cmdlet gets current TCP connections. Use this cmdlet to view TCP connection properties such as local or remote IP address, local or remote port, and #connection state. Note: This also shows owning process, so we can link the connections to the process running.
-
 #This command gets all current TCP connections.
 Get-NetTCPConnection
 
 #This example gets information about all established TCP connection
 Get-NetTCPConnection -State Established
 
-#This example gets information about anything that’s listening from any remote address. The 0.0.0.0 IP address is reserved to specify all IP addresses on the local machine.
+#This example gets information about each connection and runs Resolve-DnsName against each remote ip address to get the hosting server name of the IP.
+Get-NetTCPConnection | foreach-object {Resolve-DnsName $_.RemoteAddress -type PTR -ErrorAction SilentlyContinue}
+
+#This example gets information about connections listening from the remote address 0.0.0.0. The 0.0.0.0 IP address is reserved to specify all IP addresses on the local machine.
 Get-NetTCPConnection -State Listen | where RemoteAddress -eq "0.0.0.0"
 
-#This example gets running processes and their port number.
-Get-NetTCPConnection | where {$_.State -eq 'Listen'} | select -Property LocalAddress, @{name="Process";Expression={$psid = $_.OwningProcess; (Get-Process | where {$_.Id -eq $psid }).Name + ', ' + $_.OwningProcess}}, LocalPort,state,RemotePort | sort -property Process | ft -a
-
+#This example matches the network connections to the processes running on the computer.
+Get-NetTCPConnection | select @{name="ProcessName";Expression={$psid = $_.OwningProcess; (Get-Process | where {$_.Id -eq $psid }).name}},LocalAddress,remoteaddress | ft -a -w
 
 #gets the basic network adapter properties
 Get-NetAdapter
