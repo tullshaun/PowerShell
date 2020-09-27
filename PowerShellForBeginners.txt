@@ -1317,6 +1317,9 @@ Add-Computer -ComputerName (Get-Content c:\test\Servers.txt) -DomainName LonDoma
 Active Directory Group Policy
 #######################################
 
+#First lets get all GPO cmdlets, to see what is available.
+Get-Command -Module grouppolicy
+
 # Get all the GPO's applied to the user in the metron domain.
 
 Get-GPResultantSetOfPolicy -User "metron\RipleyE" -ReportType Html -Path "c:\test\UserReport.html"
@@ -1695,6 +1698,11 @@ foreach ($computer in $computers) {
 
 
 ##Run the below More examples here #####
+
+#Variables that customize the behavior of PowerShell.
+$Get-Help about_Preference_Variables
+
+#Handle terminating errors.
 Get-Help about_Try_Catch_Finally
 
 
