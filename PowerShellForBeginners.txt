@@ -1036,6 +1036,9 @@ Get-NetTCPConnection -State Listen | where RemoteAddress -eq "0.0.0.0"
 #This example matches the network connections to the processes running on the computer.
 Get-NetTCPConnection | select @{name="ProcessName";Expression={$psid = $_.OwningProcess; (Get-Process | where {$_.Id -eq $psid }).name}},LocalAddress,remoteaddress | ft -a -w
 
+#added columns  State and AppliedSetting
+Get-NetTCPConnection | select @{name="ProcessName";Expression={$psid = $_.OwningProcess; (Get-Process | where {$_.Id -eq $psid }).name}},LocalAddress,remoteaddress,State,AppliedSetting  | ft -a -w
+
 #gets the basic network adapter properties
 Get-NetAdapter
 
