@@ -1707,10 +1707,13 @@ foreach ($computer in $computers) {
 
 
 
-##Run the below More examples here #####
+##Run the below more details and examples here #####
+
+#Describes the parameters that can be used with any cmdlet.
+Get-Help about_CommonParameters
 
 #Variables that customize the behavior of PowerShell.
-$Get-Help about_Preference_Variables
+Get-Help about_Preference_Variables
 
 #Handle terminating errors.
 Get-Help about_Try_Catch_Finally
