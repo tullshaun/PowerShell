@@ -522,8 +522,13 @@ $i++}
 
 #To search all text files for the word password in the the c:\test\ folder we can use the below command.
 Select-String -Path c:\test\*.txt -Pattern 'password'
+
 #To search in c:\test\ and all subfolders for .txt files, we can use the below command.
 Get-ChildItem -Path c:\test\*.txt  -Recurse | Select-String 'password'  | Select Path,Linenumber,Line |ft -a -w
+
+#This will find text files not older than a day with the word password.
+Get-ChildItem -Path c:\test\*.txt -Recurse | Where-Object {$_.LastWriteTime -gt (Get-Date).AddDays(-1)} | select-string -pattern "Password"
+
 #using -List finds the first instance of matching text in a file and is the most efficient way to retrieve a list of files. Only returning path in this example.
 Get-ChildItem -Path c:\test\*.txt  -Recurse | Select-String 'password' -List | Select Path
 
