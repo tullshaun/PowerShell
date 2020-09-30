@@ -1659,6 +1659,9 @@ Stop-Service -Name BITS
 Start-Service -Name BITS -verbose
 Stop-Service -Name BITS -verbose
 
+#for more information on the common parameters you can use with cmdlets, run the below command.
+Get-Help about_CommonParameters
+
 # Change the ErrorActionPreference to 'Continue'
 $ErrorActionPreference = 'Continue'
 # Generate a non-terminating error and continue processing the script.
