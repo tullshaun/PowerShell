@@ -244,6 +244,9 @@ Get-Service | Export-Csv c:\test\servicesnt.csv -NoTypeInformation
 #Output results to an XML file
 Get-Service | Export-clixml c:\test\services.xml
 
+#Output results to Json
+Get-Service | ConvertTo-Json
+
 #Output results to an HTML file in table format
 Get-Service | ConvertTo-Html | Out-File c:\test\services.html
 
@@ -1499,7 +1502,7 @@ Invoke-Command -ScriptBlock { hostname } -ComputerName $computers
 
 #Will we now look at a few simple useful remote PowerShell  commands to manage a group of computers.
 #Get the newest errors from the Application Event Log from Comp1 and Comp2
-Invoke-Command -ComputerName Comp1,Comp2 - ScriptBlock { Get-EventLog -LogName Application -EntryType Error -Newest 10}
+Invoke-Command -ComputerName Comp1,Comp2 -ScriptBlock { Get-EventLog -LogName Application -EntryType Error -Newest 10}
 
 #Confirm failed logon attempts by user SmithA on Server01.
 # Using invoke command
@@ -1520,7 +1523,7 @@ Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Stop-Service -name 
 Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Start-Service -name MSSQLSERVER -Verbose }
 Invoke-Command -ComputerName SQLVRV01,SQLVRV01 -ScriptBlock {Start-Service -name SQLSERVERAGENT -Verbose }
 
-   The below command shows you how to stop notepad process on multiple computers.
+#The below command shows you how to stop notepad process on multiple computers.
 #Stop the notepad process on multiple Servers from variable
 $Computers ='computer1', 'computer2', 'computer3'
 Invoke-Command -ComputerName $Computers -ScriptBlock {Stop-Process notepad}
@@ -1551,7 +1554,11 @@ foreach($i in $user)
 
 
 #An audit is required to get all members of the local administrators group on remote servers. In the example with pass in the server names using the servers.txt file.
-Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") ScriptBlock { Get-LocalGroupMember -Group "Administrators"} |Select PScomputername,name,objectclass | FT -A
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock { Get-LocalGroupMember -Group "Administrators"} | Select PScomputername,name,objectclass | FT -A
+
+#If you havent got the Get-LocalGroupMember cmdlet. You can use the example below, to get all members of the local administrators group on remote servers.
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {$admins = (net localgroup Administrators) foreach ($admin in $admins) { write-output "$env:computername : $admin" } }
+
 
 #Confirm remote computers have restarted on all the servers in the servers.txt file.
 Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock { Get-CimInstance -ClassName Win32_OperatingSystem } |Select PScomputername, LastBootUpTime | FT -A
