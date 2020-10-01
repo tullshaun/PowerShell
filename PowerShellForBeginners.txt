@@ -1557,7 +1557,7 @@ foreach($i in $user)
 Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock { Get-LocalGroupMember -Group "Administrators"} | Select PScomputername,name,objectclass | FT -A
 
 #If you havent got the Get-LocalGroupMember cmdlet. You can use the example below, to get all members of the local administrators group on remote servers.
-Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {$admins = (net localgroup Administrators | where {$_ -AND $_ -notmatch "command completed successfully"}) foreach ($admin in $admins) { write-output "$env:computername : $admin" } }
+Invoke-Command -ComputerName (Get-Content "c:\test\servers.txt") -ScriptBlock {$admins = (net localgroup Administrators | where {$_ -AND $_ -notmatch "command completed successfully"} | Select -Skip 4 ) foreach ($admin in $admins) { write-output "$env:computername : $admin" } }
 
 
 #Confirm remote computers have restarted on all the servers in the servers.txt file.
