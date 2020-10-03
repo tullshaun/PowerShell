@@ -792,6 +792,31 @@ Get-WmiObject -Class Win32_Groupuser | Where { $_.GroupComponent -match ‘admin
 Get-WmiObject -Class Win32_Groupuser -Computer Comp1 | Where { $_.GroupComponent -match ‘administrators’} | Select GroupComponent, partcomponent |ft -A
 
 
+#The below example demonstrates, using the WMI Win32_Service, and using a loop(foreach), for servers in a text file c:\test\servers.txt, and writing out all services, on each #computer to a services.csv file and unreachable servers to a text file: unreachable.txt.
+#Get all services inluding logon as service name
+
+$computername =(get-content c:\test\servers.txt) 
+
+Foreach($computer in $computername) {
+ try { 
+$null = Test-Connection -computername $computer -Count 1 -ErrorAction stop 
+
+write-output "$computer OK" 
+
+Get-WMiObject Win32_Service -computer $computer | select pscomputername,Name, DisplayName, State, StartMode, StartName | export-csv -append -path C:\ps\services.csv -NoTypelnformation 
+
+}
+ 
+catch { 
+
+write-output "$computer - $($_.Exception.Message)" $computer | Out-File -append c:\test\unreachable.txt }
+
+} 
+
+
+
+
+
 ##############################
 Get Computer Information: Get-CimInstance
 ##############################
