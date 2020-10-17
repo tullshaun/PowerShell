@@ -941,6 +941,27 @@ Get-ComputerInfo | Select sName,WindowsProductName,CsTotalPhysicalMemory,CsProce
 
 
 ############################
+Perfromance Monitor
+###########################
+#This example outputs the performance data captured over 60 seconds, to a .BLG file to the c:\test folder.
+
+$Counters = @(
+        "\System\Processor Queue Length",
+	"\Processor(*)\% Processor Time",
+        "\Memory\Pages/sec",
+        "\Memory\Available MBytes",
+        "\Paging File(*)\% Usage",
+        "\PhysicalDisk(*)\% Idle Time",
+        "\PhysicalDisk(*)\Avg. Disk sec/Read",
+        "\PhysicalDisk(*)\Avg. Disk sec/Write",
+        "\Network Interface(*)\Bytes Total/sec",
+        "\Network Interface(*)\Output Queue Length"
+
+        )
+
+Get-Counter -Counter $Counters -SampleInterval 5 -MaxSamples 12 | Export-Counter -Path C:\Test\PerfMon.blg -FileFormat BLG -Force
+
+############################
 Computer Restart
 ###########################
 
