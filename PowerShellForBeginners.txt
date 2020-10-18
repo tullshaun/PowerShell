@@ -440,6 +440,20 @@ Get-PSDrive -PSProvider filesystem
 # local storage device on a computer system running Windows
 Get-WmiObject Win32_LogicalDisk | ft -a
 
+##This gets disk storage details on the local computer only. -ComputerName "."
+Get-WmiObject Win32_LogicalDisk -Filter DriveType=3 -ComputerName "." | Select PSComputerName,Deviceid, @{'Name'='Size'; 'Expression'={[int]($_.size / 1GB)}},@{'Name'='Freespace'; 'Expression'={[int]($_.freespace / 1GB)}}
+
+##The example below, gets disk storage details, on remote computers.
+$servers = @("Server1","Server2","Server2") 
+Foreach ($server in $servers)
+ { 
+Get-WmiObject Win32_LogicalDisk -Filter DriveType=3 -ComputerName $server  | Select PSComputerName,Deviceid, @{'Name'='Size'; 'Expression'={[int]($_.size / 1GB)}},@{'Name'='Freespace'; 'Expression'={[int]($_.freespace / 1GB)}}
+}
+
+
+#Folder and File commands
+
+
 #This command creates a new folder called temp in C:\test\
 New-Item -Path 'C:\test\temp' -ItemType Directory
 
