@@ -975,6 +975,23 @@ $Counters = @(
 
 Get-Counter -Counter $Counters -SampleInterval 5 -MaxSamples 12 | Export-Counter -Path C:\Test\PerfMon.blg -FileFormat BLG -Force
 
+
+
+#Output performance data to the console, run the below command.
+foreach ($counter in $counters)
+{ 
+   (Get-Counter -counter $counter).countersamples 
+}
+
+
+
+#To output performance data to a csv use the example below; using 3 second intervals and 10 max samples.
+foreach ($counter in $counters)
+{ 
+ (get-counter -counter $counter -SampleInterval 3 -MaxSamples 10).countersamples | Select path, InstanceName, CookedValue, Timestamp | export-csv -path c:\test\perfmon.csv -notypeinformation -append
+}
+
+
 ############################
 Computer Restart
 ###########################
