@@ -985,10 +985,10 @@ foreach ($counter in $counters)
 
 
 
-#To output performance data to a csv use the example below; using 3 second intervals and 10 max samples.
+#To output performance data to a csv use the example below.
 foreach ($counter in $counters)
 { 
- (get-counter -counter $counter -SampleInterval 3 -MaxSamples 10).countersamples | Select path, InstanceName, CookedValue, Timestamp | export-csv -path c:\test\perfmon.csv -notypeinformation -append
+ (get-counter -counter $counter).countersamples | Select path, InstanceName, CookedValue, Timestamp | export-csv -path c:\test\perfmon.csv -notypeinformation -append
 }
 
 
