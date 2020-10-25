@@ -1677,6 +1677,34 @@ PS C:\> Enter-PSSession -Session $s
 [Serv01]: PS C:\>
 
 
+########################################
+PowerShell Scripts
+########################################
+
+
+I would recommend saving all your scripts to a specified location. You can keep your created scripts or scripts downloaded from the internet in your working directory. In the next example we will look at setting the location to your working script directory and then run your scripts. This will save having to type out the full location of the script. In the example below we create a D:\Powershell\Scripts location and place all our Powershell scripts here.
+
+#Set the working directory to where our PowerShell scripts are.
+Set-Location -Path D:\Powershell\Scripts
+
+#You should now be able to specify just root .\ and the script name and run all your scripts as below; Type .\ and also TAB through your scripts.
+.\GetProcessSortByMemory.ps1
+
+#You can now review the the list of blocked files downloaded from the Internet.
+Get-Item * -Stream "Zone.Identifier" -ErrorAction SilentlyContinue
+
+#To unblock a single file called Get-Diskdetails.ps1 you can run the below command.
+Unblock-File Get-Diskdetails.ps1
+
+#Unblock all files with a .ps1 extension, run the below command.
+Get-ChildItem -Filter *.ps1 | Unblock-File
+
+#For more examples.
+#Run the below command to get more Script examples.
+
+Get-Help about_Scripts
+
+
 #########################################
 Functions
 ##########################################
