@@ -1690,6 +1690,14 @@ Set-Location -Path D:\Powershell\Scripts
 #You should now be able to specify just root .\ and the script name and run all your scripts as below; Type .\ and also TAB through your scripts.
 .\GetProcessSortByMemory.ps1
 
+
+#To dot source a script, type a dot (.) and a space before .\GetProcessSortByMemory.ps1 as below.
+. .\GetProcessSortByMemory.ps1
+
+#You should now be able to specify just GetProcessSortByMemory to run the script.
+GetProcessSortByM
+
+
 #You can now review the the list of blocked files downloaded from the Internet.
 Get-Item * -Stream "Zone.Identifier" -ErrorAction SilentlyContinue
 
