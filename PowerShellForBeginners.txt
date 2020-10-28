@@ -84,7 +84,12 @@ PowerShell Pipeline
 Get-member
 #############################
 
+Get-Service | Get-Member
+
 Get-Service | select-object Status, Name, StartType, DependentServices | Format-Table -Autosize
+
+#Get more examples on Get_Member
+Get-Help Get-Member -examples
 
 #########################
 Get-Help
