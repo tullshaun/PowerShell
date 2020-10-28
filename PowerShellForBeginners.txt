@@ -1774,6 +1774,59 @@ Get-Help about_Functions_Advanced
 
 
 ############################################
+The PowerShell Profile
+############################################
+
+#The command below will create your profile file (Microsoft.PowerShell_profile.ps1), the If statement prevents you from overwriting an existing profile.
+
+if (!(Test-Path -Path $PROFILE)) {
+New-Item -ItemType File -Path $PROFILE -Force
+}
+
+#The below command will locate where your PowerShell profile file (Microsoft.PowerShell_profile.ps1) is.
+$PROFILE
+
+#The below command will open your PowerShell profile file (Microsoft.PowerShell_profile.ps1) in Notepad, so we can customise it.
+notepad $PROFILE
+
+
+
+#Function to check for Elevated permissions
+
+function Test-Administrator {
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+$currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+if (Test-Administrator) {$Elevated = "(Elevated)"}
+
+#Display details on the title bar using the function prompt.
+
+function prompt
+{
+$hostversion="$($Host.Version.Major).$($Host.Version.Minor)"
+$host.UI.RawUI.WindowTitle = "PowerShell $hostversion $env:UserName $Elevated on Computer $env:COMPUTERNAME "
+}
+
+#Set the location to where your PowerShell scripts are located.
+set-location -path d:\powershell\scripts
+
+#Welcome message
+Write-Host 'Welcome' "$env:username" 'to' "$env:computername" -ForegroundColor Green
+Write-Host "Today is:" (Get-Date -Format "dddd dd/MM/yyyy HH:mm")
+Write-Host "Your Location is:" (Get-Location)
+
+#The below function enables you to open your profile by just typing Pro
+function Pro {notepad $PROFILE}
+
+
+
+#Run the below commands, to get more details on the areas we covered in this section.
+Get-Help about_Profiless
+Get-Help about_Prompts
+
+
+
+############################################
 PowerShell Verbose and Errors
 ############################################
 #Stopping and Starting the BITS service
