@@ -1816,9 +1816,11 @@ $host.UI.RawUI.WindowTitle = "PowerShell $hostversion $env:UserName $Elevated on
 set-location -path d:\powershell\scripts
 
 #Welcome message
+"#"*50
 Write-Host 'Welcome' "$env:username" 'to' "$env:computername" -ForegroundColor Green
 Write-Host "Today is:" (Get-Date -Format "dddd dd/MM/yyyy HH:mm")
 Write-Host "Your Location is:" (Get-Location)
+"#"*50
 
 #The below function enables you to open your profile by just typing Pro
 function Pro {notepad $PROFILE}
