@@ -1812,8 +1812,11 @@ $hostversion="$($Host.Version.Major).$($Host.Version.Minor)"
 $host.UI.RawUI.WindowTitle = "PowerShell $hostversion $env:UserName $Elevated on Computer $env:COMPUTERNAME "
 }
 
-#Set the location to where your PowerShell scripts are located.
-set-location -path d:\powershell\scripts
+
+#Set the location and Path environment variable, to where your PowerShell scripts are located.
+$path = "d:\powershell\scripts"
+set-location -path $path
+$env:Path = $path
 
 #Welcome message
 "#"*50
