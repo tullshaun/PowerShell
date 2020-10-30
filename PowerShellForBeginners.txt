@@ -1692,6 +1692,9 @@ I would recommend saving all your scripts to a specified location. You can keep 
 #Set the working directory to where our PowerShell scripts are.
 Set-Location -Path D:\Powershell\Scripts
 
+#Now you have set a location let's run the below command to add it to the Path environment variable.
+$env:path ="$($env:path);."
+
 #You should now be able to specify just root .\ and the script name and run all your scripts as below; Type .\ and also TAB through your scripts.
 .\GetProcessSortByMemory.ps1
 
