@@ -1703,7 +1703,7 @@ $env:path ="$($env:path);."
 . .\GetProcessSortByMemory.ps1
 
 #You should now be able to specify just GetProcessSortByMemory to run the script.
-GetProcessSortByM
+GetProcessSortByMemory
 
 
 #You can now review the the list of blocked files downloaded from the Internet.
@@ -1717,8 +1717,13 @@ Get-ChildItem -Filter *.ps1 | Unblock-File
 
 #For more examples.
 #Run the below command to get more Script examples.
-
 Get-Help about_Scripts
+
+#Run the below command to get more environment variable details.
+Get-Help about_Environment_Variables
+
+#Run the below command to get more Unblock File examples.
+Get-Help Unblock-File -examples
 
 
 #########################################
@@ -1834,7 +1839,8 @@ function Pro {notepad $PROFILE}
 
 
 #Run the below commands, to get more details on the areas we covered in this section.
-Get-Help about_Profiless
+Get-Help about_Profiles
+Get-Help about_Environment_Variables
 Get-Help about_Prompts
 
 
