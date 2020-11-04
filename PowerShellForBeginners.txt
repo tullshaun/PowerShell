@@ -455,6 +455,13 @@ Foreach ($server in $servers)
 Get-WmiObject Win32_LogicalDisk -Filter DriveType=3 -ComputerName $server  | Select PSComputerName,Deviceid, @{'Name'='Size'; 'Expression'={[int]($_.size / 1GB)}},@{'Name'='Freespace'; 'Expression'={[int]($_.freespace / 1GB)}}
 }
 
+#The example below, gets disk storage details, on remote computers and exports the results to a csv file.
+$servers = @("Server1","Server2","Server2")
+Foreach ($server in $servers)
+  {
+Get-WmiObject Win32_LogicalDisk -Filter DriveType=3 -ComputerName $server | Select PSComputerName,Deviceid, @{'Name'='Size'; 'Expression'={[int]($_.size / 1GB)}},@{'Name'='Freespace'; 'Expression'={[int]($_.freespace / 1GB)}} | Export-Csv -Path c:\test\ServerStorage.csv -NoTypeInformation -append
+   }
+
 
 #Folder and File commands
 
