@@ -1705,12 +1705,14 @@ I would recommend saving all your scripts to a specified location. You can keep 
 #Set the working directory to where our PowerShell scripts are.
 Set-Location -Path D:\Powershell\Scripts
 
-#Now you have set a location let's run the below command to add it to the Path environment variable.
-$env:path ="$($env:path);."
-
 #You should now be able to specify just root .\ and the script name and run all your scripts as below; Type .\ and also TAB through your scripts.
 .\GetProcessSortByMemory.ps1
 
+#To review the paths in the current path environment variable, run the below command.
+$env:path
+
+#You should be in the D:\Powershell\Scripts location, now you can run the below command to append this location to the path environment variable.
+$env:path ="$($env:path);."
 
 #To dot source a script, type a dot (.) and a space before .\GetProcessSortByMemory.ps1 as below.
 . .\GetProcessSortByMemory.ps1
@@ -1728,6 +1730,19 @@ Unblock-File Get-Diskdetails.ps1
 #Unblock all files with a .ps1 extension, run the below command.
 Get-ChildItem -Filter *.ps1 | Unblock-File
 
+
+##You should be in the D:\Powershell\Scripts location, and this will output the hash values to: c:\test\PSFilesHash.txt
+
+$hashresult = @{}
+$hashresult = get-childitem .\ *.ps1 | foreach {
+     [pscustomobject] @{
+         File = $_.name
+         Hash = (get-filehash $_.fullname ).hash
+     }
+ }
+
+$hashresult | format-table -auto | out-file c:\test\PSFilesHash.txt
+
 #For more examples.
 #Run the below command to get more Script examples.
 Get-Help about_Scripts
@@ -1737,6 +1752,9 @@ Get-Help about_Environment_Variables
 
 #Run the below command to get more Unblock File examples.
 Get-Help Unblock-File -examples
+
+#Run the below command to get more details on how to compute the hash value for files.
+Get-Help Get-FileHash
 
 
 #########################################
