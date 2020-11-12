@@ -1835,20 +1835,14 @@ notepad $PROFILE
 
 
 
-#Function to check for Elevated permissions
-
-function Test-Administrator {
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-$currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-if (Test-Administrator) {$Elevated = "(Elevated)"}
-
-#Display details on the title bar using the function prompt.
-
+# function prompt check for Elevated permissions, display PowerShell Version and User & Computername in Title 
 function prompt
 {
-$hostversion="$($Host.Version.Major).$($Host.Version.Minor)"
-$host.UI.RawUI.WindowTitle = "PowerShell $hostversion $env:UserName $Elevated on Computer $env:COMPUTERNAME "
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {$Elevated = "(Elevated)"}
+
+$hostversion="$($Host.Version.Major)`.$($Host.Version.Minor)"
+$host.UI.RawUI.WindowTitle = "PowerShell $hostversion $env:UserName $Elevated on Computer $env:COMPUTERNAME "  
 }
 
 
