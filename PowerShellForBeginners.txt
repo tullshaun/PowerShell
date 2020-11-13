@@ -941,7 +941,7 @@ foreach ($computer in $computers) {
              CPU = $CPU.Name
              InstallDate =$installD.InstallDate
         }
-
+   $AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A	
 	}
 	catch {
 		Write-Output "$computer - $($_.Exception.Message)"
@@ -949,7 +949,7 @@ foreach ($computer in $computers) {
 }
 
 
-$AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A
+
 
 
 ##############################
