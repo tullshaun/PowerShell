@@ -1769,7 +1769,7 @@ Get-CimInstance -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=$true
 Get-IPaddresses
 
 
-#The Function below is based on the audit code we created earlier. This will return details of the local computer.
+#The Function below is based on the audit code we created earlier. This will return the system details of the local computer.
 Function Get-ComputerAudit {
 
         $OS = Get-CimInstance   Win32_OperatingSystem
@@ -1777,21 +1777,25 @@ Function Get-ComputerAudit {
         $MEM = Get-CimInstance  Win32_PhysicalMemory
         $installD = Get-CimInstance  Win32_OperatingSystem
              $AuditTable = [PSCustomObject]@{
-             ComputerName = Hostname
+             ComputerName = $env:COMPUTERNAME
              OperatingSystem = $OS.Caption
-            "Memory(GB)" = $MEM.Capacity/1GB
+             Memory = $MEM.Capacity
              CPU = $CPU.Name
              InstallDate =$installD.InstallDate
 
 
         }  
- return $AuditTable | Select ComputerName, OperatingSystem,CPU,"Memory(GB)", InstallDate |ft -A 
+$AuditTable | Select ComputerName, OperatingSystem,CPU,@{Label="Memory(GB)";expression = {($_.Memory/1GB)}}, InstallDate 
+
 
 }
 
 
-#To run the function
+#To run the function on the local computer 
 Get-ComputerAudit
+
+#to run the function on multiple computers use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue
 
 
 
