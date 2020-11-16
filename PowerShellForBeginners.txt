@@ -1794,6 +1794,9 @@ $AuditTable | Select ComputerName, OperatingSystem,CPU,MemoryGB, InstallDate
 #To run the function on the local computer 
 Get-ComputerAudit
 
+#To run the function on the local computer display in table format with autosize
+Get-ComputerAudit | ft -a 
+
 #to run the function on multiple computers use the below invoke command
 Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} 
 #to run the function on multiple computers and suppress errors use the below invoke command
