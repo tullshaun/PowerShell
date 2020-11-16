@@ -1785,7 +1785,7 @@ Function Get-ComputerAudit {
 
 
         }  
-$AuditTable | Select ComputerName, OperatingSystem,CPU,@{Label="Memory(GB)";expression = {($_.Memory/1GB)}}, InstallDate 
+$AuditTable | Select ComputerName, OperatingSystem,CPU,@{Label=MemoryGB;expression = {($_.Memory/1GB)}}, InstallDate 
 
 
 }
@@ -1795,9 +1795,11 @@ $AuditTable | Select ComputerName, OperatingSystem,CPU,@{Label="Memory(GB)";expr
 Get-ComputerAudit
 
 #to run the function on multiple computers use the below invoke command
-Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue
-
-
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} 
+#to run the function on multiple computers and suppress errors use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | ft - a
+#to run the function on multiple computers and suppress errors and export to csv use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | Export-Csv -Path C:\test\serveraudit.csv -NoTypeInformation -append
 
 ## create the Get-RdsUser function
 
