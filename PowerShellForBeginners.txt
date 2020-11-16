@@ -1774,18 +1774,18 @@ Function Get-ComputerAudit {
 
         $OS = Get-CimInstance   Win32_OperatingSystem
         $CPU = Get-CimInstance  Win32_Processor
-        $MEM = Get-CimInstance  Win32_PhysicalMemory
+        $MEM = (Get-CimInstance  Win32_PhysicalMemory | Measure-Object -Property capacity -Sum | foreach {[Math]::Round(($_.sum / 1GB),2)})
         $installD = Get-CimInstance  Win32_OperatingSystem
              $AuditTable = [PSCustomObject]@{
              ComputerName = $env:COMPUTERNAME
              OperatingSystem = $OS.Caption
-             Memory = $MEM.Capacity
+             MemoryGB = $MEM
              CPU = $CPU.Name
              InstallDate =$installD.InstallDate
 
 
         }  
-$AuditTable | Select ComputerName, OperatingSystem,CPU,@{Label=MemoryGB;expression = {($_.Memory/1GB)}}, InstallDate 
+$AuditTable | Select ComputerName, OperatingSystem,CPU,MemoryGB, InstallDate 
 
 
 }
