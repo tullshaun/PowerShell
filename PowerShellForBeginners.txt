@@ -881,18 +881,22 @@ Get-CimInstance -Class Win32_OperatingSystem -ComputerName com1,com2 | Select In
 #We can get the total capacity of the physical memory, but it is shown in bytes.
 Get-CimInstance -ClassName Win32_PhysicalMemory -ComputerName com1,com2 | select Capacity
 
-#we can convert this to GB, as shown below.
+#we can convert this to GB, using a custom column as shown below.
 Get-CimInstance -ClassName Win32_PhysicalMemory -ComputerName com1,com2 | select @{Label = "Memory(GB)"; Expression = {[int]($_.Capacity / 1GB)}}
+
+#If you have more than one memory module installed the below command will be better.
+(Get-Ciminstance Win32_PhysicalMemory | measure-object Capacity -Sum).Sum/1GB
 
 
 #We can put this all together and use the Get-CimInstance cmdlet’s to make a simple computer audit. We will use the PSCustomObject and assign the variable $AuditTable to hold the structured data. Review the command below to see how this is used.
 #Below just gets audit details on the local computer
 $computers =hostname
 foreach ($computer in $computers) {
-        $OS = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
-        $CPU = Get-CimInstance -ComputerName $computer -ClassName Win32_Processor
-        $MEM = Get-CimInstance -ComputerName $computer -ClassName Win32_PhysicalMemory
-        $installD = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+	$session = New-cimsession -computername $computer 
+	$OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
+        $CPU = Get-CimInstance -ClassName Win32_Processor -CimSession $session
+        $MEM = Get-CimInstance -ClassName Win32_PhysicalMemory -CimSession $session
+        $installD = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
              $AuditTable = [PSCustomObject]@{
              ComputerName = $computer
              OperatingSystem = $OS.Caption
