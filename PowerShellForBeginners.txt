@@ -928,10 +928,11 @@ foreach ($computer in $computers) {
 		$null = Test-Connection -ComputerName $computer -Count 1 -ErrorAction STOP
 
 
-        $OS = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
-        $CPU = Get-CimInstance -ComputerName $computer -ClassName Win32_Processor
-        $MEM = Get-CimInstance -ComputerName $computer -ClassName Win32_PhysicalMemory
-        $installD = Get-CimInstance -ComputerName $computer -ClassName Win32_OperatingSystem
+        $session = New-cimsession -computername $computer 
+	$OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
+        $CPU = Get-CimInstance -ClassName Win32_Processor -CimSession $session
+        $MEM = Get-CimInstance -ClassName Win32_PhysicalMemory -CimSession $session
+        $installD = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
              $AuditTable = [PSCustomObject]@{
              ComputerName = $computer
              OperatingSystem = $OS.Caption
