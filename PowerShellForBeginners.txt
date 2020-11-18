@@ -517,6 +517,23 @@ Get-ChildItem C:\test | Select Name, @{Name="Size_In_KB";Expression={$_.Length /
 #display sizes in KB and subfolders.
 Get-ChildItem C:\test -Recurse -Force | Select Name, @{Name="Size_In_KB";Expression={$_.Length / 1Kb}}
 
+####### Calculate Folder Sizes #################
+
+#Calculate the size of the C:\test folder.
+$folderPath ='C:\test'
+"$folderPath - {0:N2} GB" -f ((Get-ChildItem –force $folderPath –Recurse -ErrorAction SilentlyContinue| measure Length -s).sum / 1GB) 
+
+#Identify the subfolders in the Test folder: Where Mode -like 'd*'
+$folderPath ='C:\test'
+Get-ChildItem $folderPath | Where-Object { $_.Mode -like 'd*' } | select fullname, name
+
+#We can put the two previous commands together and pipeline the folders identified to the ForEach-Object , to calculate the sizes.
+#Calculate and display size details of the subfolders.
+$folderPath ='C:\test'
+Get-ChildItem $folderPath | Where-Object { $_.Mode -like 'd*' } | ForEach-Object {
+"$_  - {0:N2} GB" -f ((Get-ChildItem –force $_.fullname –Recurse -ErrorAction SilentlyContinue| measure Length -s).sum / 1Gb)
+} 
+
 
 
 #The Get-Acl cmdlet returns ACL security permission rights of a file, folder or registry key. The ACL specifies the permissions that users and user groups have to access the resource
