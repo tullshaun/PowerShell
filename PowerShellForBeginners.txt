@@ -913,12 +913,12 @@ $AuditTable = foreach ($computer in $computers) {
 	$session = New-cimsession -computername $computer 
 	$OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
         $CPU = Get-CimInstance -ClassName Win32_Processor -CimSession $session
-        $MEM = Get-CimInstance -ClassName Win32_PhysicalMemory -CimSession $session
+        $MEM = (Get-Ciminstance Win32_PhysicalMemory -CimSession $session | measure-object Capacity -Sum).Sum/1GB
         $installD = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
               [PSCustomObject]@{
              ComputerName = $computer
              OperatingSystem = $OS.Caption
-            "Memory(GB)" = $MEM.Capacity/1GB
+            "Memory(GB)" = $MEM
              CPU = $CPU.Name
              InstallDate =$installD.InstallDate
         } 
@@ -953,12 +953,12 @@ foreach ($computer in $computers) {
         $session = New-cimsession -computername $computer 
 	$OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
         $CPU = Get-CimInstance -ClassName Win32_Processor -CimSession $session
-        $MEM = Get-CimInstance -ClassName Win32_PhysicalMemory -CimSession $session
+        $MEM = (Get-Ciminstance Win32_PhysicalMemory -CimSession $session | measure-object Capacity -Sum).Sum/1GB
         $installD = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
              $AuditTable = [PSCustomObject]@{
              ComputerName = $computer
              OperatingSystem = $OS.Caption
-            "Memory(GB)" = $MEM.Capacity/1GB
+            "Memory(GB)" = $MEM
              CPU = $CPU.Name
              InstallDate =$installD.InstallDate
         }
