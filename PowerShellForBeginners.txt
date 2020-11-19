@@ -906,15 +906,16 @@ Get-CimInstance -ClassName Win32_PhysicalMemory -ComputerName com1,com2 | select
 
 
 #We can put this all together and use the Get-CimInstance cmdlet’s to make a simple computer audit. We will use the PSCustomObject and assign the variable $AuditTable to hold the structured data. Review the command below to see how this is used.
-#Below just gets audit details on the local computer
+#Below just gets audit details on the local computer. although you can use the array $computers =@("Server1","Server2","Server3")  to run over many computers 
+#$computers =@("Server1","Server2","Server3")
 $computers =hostname
-foreach ($computer in $computers) {
+$AuditTable = foreach ($computer in $computers) {
 	$session = New-cimsession -computername $computer 
 	$OS = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
         $CPU = Get-CimInstance -ClassName Win32_Processor -CimSession $session
         $MEM = Get-CimInstance -ClassName Win32_PhysicalMemory -CimSession $session
         $installD = Get-CimInstance -ClassName Win32_OperatingSystem -CimSession $session
-             $AuditTable = [PSCustomObject]@{
+              [PSCustomObject]@{
              ComputerName = $computer
              OperatingSystem = $OS.Caption
             "Memory(GB)" = $MEM.Capacity/1GB
