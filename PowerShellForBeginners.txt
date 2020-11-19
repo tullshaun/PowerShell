@@ -984,7 +984,7 @@ Get-ComputerInfo
 Get-ComputerInfo -Property "os*"
 
 #This will get specifc computer properties of interest for an audit.
-Get-ComputerInfo | Select sName,WindowsProductName,CsTotalPhysicalMemory,CsProcessors,CsNumberOfProcessors,CsPhyicallyInstalledMemory,CsModel
+Get-ComputerInfo | Select CsName,WindowsProductName,CsTotalPhysicalMemory,CsProcessors,CsNumberOfProcessors,CsPhyicallyInstalledMemory,CsModel
 
 
 ############################
