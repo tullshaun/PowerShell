@@ -1352,6 +1352,19 @@ Search-ADAccount -PasswordExpired | FT Name,ObjectClass -A
 #This will Search for accounts where the password never expires.
 Search-ADAccount –PasswordNeverExpires | Select Name, DistinguishedName
 
+
+#Get a List of AD Users and their Password Expiry Dates
+Get-ADUser -filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed" |
+Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}}
+
+#Get a single user Smitha  AD Password Expiry Date
+
+Get-ADUser Smitha  –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed" |
+Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}}
+
+#Get the default domain password policy on the domain.  Password length, max pwd age and the lockout threshold ie how many failures before the account is locked out.
+Get-ADDefaultDomainPasswordPolicy
+
 ####################### adding and removing AD users#################################
 
 #Adding AD users we can use the New-ADUser cmdlet. The 2nd command forces the user to change password at logon using the -ChangePasswordAtLogon parameter.
