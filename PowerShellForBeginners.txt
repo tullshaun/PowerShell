@@ -1805,6 +1805,27 @@ Get-CimInstance -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=$true
 Get-IPaddresses
 
 
+#to run the function on multiple computers use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} 
+#to run the function on multiple computers and suppress errors use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | ft - a
+#to run the function on multiple computers and suppress errors and export to csv use the below invoke command
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | Export-Csv -Path C:\test\serveraudit.csv -NoTypeInformation -append
+
+## create the Get-RdsUser function
+
+Function Get-RdsUser{$rdsuser = (qwinsta)
+foreach($i in $rdsuser) { write-host $1, $env:computername } }
+
+#To run the function
+Get-RdsUser
+
+#A great feature of PowerShell, is the ability to run functions that exist only on the local computer against remote computers. 
+#Command will return session information from serv01,serv02
+
+Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-RdsUser} -ErrorAction SilentlyContinue
+
+###########
 #The Function below is based on the audit code we created earlier. This will return the system details of the local computer.
 Function Get-ComputerAudit {
 
@@ -1833,25 +1854,7 @@ Get-ComputerAudit
 #To run the function on the local computer display in table format with autosize
 Get-ComputerAudit | ft -a 
 
-#to run the function on multiple computers use the below invoke command
-Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} 
-#to run the function on multiple computers and suppress errors use the below invoke command
-Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | ft - a
-#to run the function on multiple computers and suppress errors and export to csv use the below invoke command
-Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-ComputerAudit} -ErrorAction SilentlyContinue | Select ComputerName, OperatingSystem,CPU,MemoryGB,InstallDate | Export-Csv -Path C:\test\serveraudit.csv -NoTypeInformation -append
 
-## create the Get-RdsUser function
-
-Function Get-RdsUser{$rdsuser = (qwinsta)
-foreach($i in $rdsuser) { write-host $1, $env:computername } }
-
-#To run the function
-Get-RdsUser
-
-#A great feature of PowerShell, is the ability to run functions that exist only on the local computer against remote computers. 
-#Command will return session information from serv01,serv02
-
-Invoke-Command -ComputerName serv01,serv02 -ScriptBlock ${function:Get-RdsUser} -ErrorAction SilentlyContinue
 
 #I would advise looking at the Microsoft PowerShell documentation for more advanced uses of functions. As usual a great start will be running the below commands.
 ###More details on functons, run the below ######
