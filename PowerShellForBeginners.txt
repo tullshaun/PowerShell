@@ -1216,6 +1216,17 @@ Invoke-Sqlcmd -Query "SELECT @@SERVERNAME AS ServerName, GETDATE() AS TimeOfQuer
 #You have an audit you need to list all members in the Sysadmin role.
 Invoke-Sqlcmd -Query " exec sp_helpsrvrolemember @srvrolename='sysadmin'" -ServerInstance "LonSQL01"
 
+#You have an audit you need to list all members in the Sysadmin role o a list of SQL Servers.
+#Lets first get the list of SQL servers
+$SQLServers ='SQL1','SQL2','SQL3'
+$SysAdmins =@()
+$SqlQuery ="exec sp_helpsrvrolemember @srvrolename='sysadmin'"
+	ForEach ($SqlServer in $SQLServers)
+	{
+		$SysAdmins += Invoke-Sqlcmd -Query $SqlQuery -ServerInstance $SqlServer
+	{
+$SysAdmins
+
 
 #It is common to be given a list of values which you are then required to do a search on these values within a database. A common task is to format a list of values so you can #then use them with T-SQL. The example below shows you how to enclose a list of values from a text file and output these values enclosed with single quotes with a comma #delimiter. Create a text file called data in C:\test add some names on each line and run the below command.
 
