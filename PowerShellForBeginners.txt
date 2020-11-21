@@ -1220,7 +1220,7 @@ Invoke-Sqlcmd -Query " exec sp_helpsrvrolemember @srvrolename='sysadmin'" -Serve
 #Lets first get the list of SQL servers
 $SQLServers ='SQL1','SQL2','SQL3'
 $SysAdmins =@()
-$SqlQuery ="exec sp_helpsrvrolemember @srvrolename='sysadmin'"
+$SqlQuery ="SELECT @@servername SQLServer,name,createdate,sysadmin,denylogin FROM master.dbo.syslogins WHERE sysadmin = 1"
 	ForEach ($SqlServer in $SQLServers)
 	{
 		$SysAdmins += Invoke-Sqlcmd -Query $SqlQuery -ServerInstance $SqlServer
