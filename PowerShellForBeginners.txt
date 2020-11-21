@@ -1224,7 +1224,7 @@ $SqlQuery ="exec sp_helpsrvrolemember @srvrolename='sysadmin'"
 	ForEach ($SqlServer in $SQLServers)
 	{
 		$SysAdmins += Invoke-Sqlcmd -Query $SqlQuery -ServerInstance $SqlServer
-	{
+	}
 $SysAdmins
 
 
