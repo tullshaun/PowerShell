@@ -1225,7 +1225,14 @@ $SqlQuery ="SELECT @@servername SQLServer,name,createdate,sysadmin,denylogin FRO
 	{
 		$SysAdmins += Invoke-Sqlcmd -Query $SqlQuery -ServerInstance $SqlServer
 	}
+#the results are now contained in the $SysAdmins array.
 $SysAdmins
+
+#display results to the console as a format table
+$SysAdmins | FT -a
+
+#export results to a csv file
+$SysAdmins | Export-Csv c:\test\SysAdmins.csv -NoTypeInformation
 
 
 #It is common to be given a list of values which you are then required to do a search on these values within a database. A common task is to format a list of values so you can #then use them with T-SQL. The example below shows you how to enclose a list of values from a text file and output these values enclosed with single quotes with a comma #delimiter. Create a text file called data in C:\test add some names on each line and run the below command.
