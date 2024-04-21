@@ -1,0 +1,116 @@
+30 useful PowerShell scripts:
+
+
+# Get detailed system information
+Get-ComputerInfo | Select-Object @{Name='Operating System';Expression={$_.OsName}}, @{Name='OS Architecture';Expression={$_.OsArchitecture}}, @{Name='Physical Memory (GB)';Expression={'{0:N2}' -f ($_.CsPhyicallyInstalledMemory/1GB)}}, @{Name='Logical Processors';Expression={$_.CsNumberOfLogicalProcessors}}, @{Name='Hyper-V Support';Expression={$_.CsHyperVisorPresent}}
+
+
+# Get a list of installed software
+Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table -AutoSize
+
+
+# Get a list of running processes with their CPU and memory usage
+Get-Process | Select-Object ProcessName, CPU, @{Name='Memory (MB)';Expression={'{0:N2}' -f ($_.WS/1MB)}} | Sort-Object CPU -Descending | Format-Table -AutoSize
+
+
+# Get network interface information
+Get-NetIPConfiguration | Select-Object InterfaceAlias, InterfaceDescription, IPv4Address, IPv6Address, @{Name='Default Gateway';Expression={$_.IPv4DefaultGateway.NextHop}} | Format-Table -AutoSize
+
+
+# Get disk information
+Get-Disk | Select-Object FriendlyName, OperationalStatus, HealthStatus, @{Name='Size (GB)';Expression={'{0:N2}' -f ($_.Size/1GB)}}, @{Name='Free Space (GB)';Expression={'{0:N2}' -f ($_.LargestFreeExtent/1GB)}} | Format-Table -AutoSize
+
+
+# Get the latest 50 error events from the System log
+Get-EventLog -LogName System -EntryType Error -Newest 50
+
+
+# Get a list of running services
+Get-Service | Where-Object {$_.Status -eq 'Running'} | Select-Object Name, DisplayName, Status | Format-Table -AutoSize
+
+
+
+# Get active firewall rules
+Get-NetFirewallRule | Where-Object {$_.Enabled -eq 'True'} | Select-Object Name, DisplayName, Action, Profile | Format-Table -AutoSize
+
+
+
+# Get a list of scheduled tasks
+Get-ScheduledTask | Select-Object TaskName, State, LastRunTime, NextRunTime | Format-Table -AutoSize
+
+
+
+# Get a list of environment variables
+Get-ChildItem Env:
+
+
+# Get a list of local user accounts
+Get-LocalUser | Select-Object Name, Enabled, Description, LastLogon | Format-Table -AutoSize
+
+
+# Get installed hotfixes and updates
+Get-HotFix | Select-Object HotFixID, Description, InstalledOn | Format-Table -AutoSize
+
+
+
+# Get a list of available Windows updates
+$Session = New-Object -ComObject Microsoft.Update.Session
+$Searcher = $Session.CreateUpdateSearcher()
+$SearchResult = $Searcher.Search("IsInstalled=0 AND Type='Software'")
+$SearchResult.Updates | Select-Object Title, Description, IsInstalled
+
+
+
+# Get a list of running applications
+Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | Select-Object ProcessName, MainWindowTitle | Format-Table -AutoSize
+
+
+# Get the computer uptime
+$Uptime = (Get-Date) - (gcim Win32_OperatingSystem).LastBootUpTime
+Write-Output "Computer uptime: $($Uptime.Days) days, $($Uptime.Hours) hours, $($Uptime.Minutes) minutes"
+
+
+# Get a list of active TCP/IP connections
+Get-NetTCPConnection | Select-Object State, AppliedSetting, OwningProcess, LocalAddress, LocalPort, RemoteAddress, RemotePort | Format-Table -AutoSize
+
+
+# Get a list of mapped network drives
+Get-PSDrive -PSProvider 'FileSystem' | Where-Object {$_.Root -like '\\*'} | Select-Object Name, Root, CurrentLocation | Format-Table -AutoSize
+
+
+# Get a list of installed Windows roles and features
+Get-WindowsFeature | Where-Object {$_.InstallState -eq 'Installed'} | Select-Object Name, DisplayName, Description | Format-Table -AutoSize
+
+
+# Get the installed PowerShell version
+$PSVersionTable
+
+
+# Get the Windows version and build information
+[System.Environment]::OSVersion
+
+
+# List folder and file sizes on the root of the C drive, skipping inaccessible folders
+Get-ChildItem -Path 'C:\' -Recurse -Force -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object FullName, @{Name='Size (MB)'; Expression={'{0:N2}' -f ($_.Length / 1MB)}} | Format-Table -AutoSize
+
+
+# Search for a file named "findme.txt" on the C drive
+$fileName = "findme.txt"
+$results = Get-ChildItem -Path 'C:\' -Recurse -Filter $fileName -Force -ErrorAction SilentlyContinue
+if ($results) {
+    Write-Output "File(s) found:"
+    $results | Select-Object FullName
+} else {
+    Write-Output "File not found."
+}
+
+
+# Search for the word "password" in files in the C:\temp folder location
+$searchTerm = "password"
+$searchPath = "C:\temp"
+Get-ChildItem -Path $searchPath -Recurse -File | Select-String -Pattern $searchTerm -CaseSensitive | Select-Object Path, Line
+
+
+
+
+
