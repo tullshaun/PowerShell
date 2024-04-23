@@ -111,6 +111,70 @@ $searchPath = "C:\temp"
 Get-ChildItem -Path $searchPath -Recurse -File | Select-String -Pattern $searchTerm -CaseSensitive | Select-Object Path, Line
 
 
+## Connect to remote servers and use remote commands
+
+
+# Return status of local account bob on a remote server called ServerA
+
+$server ='ServerA'
+Invoke-Command -ComputerName $server -ScriptBlock {net user Bob}
+
+# Return a status of services with a name like ora (oracle services) on a remote server
+
+$oracleServices = Invoke-Command -ComputerName $server -ScriptBlock { Get-Service | Where-Object {$_.Name -like '*ora*'} } 
+$oracleServices
+
+
+
+# Setting up and Using Enter-PSSession
+# To use Enter-PSSession, you first need to make sure that PowerShell Remoting is enabled on the remote computer. You can enable it by running the following command on the remote computer:
+
+Enable-PSRemoting -Force
+
+
+#This command sets up the necessary firewall rules and starts the WinRM service, which is required for PowerShell Remoting.
+
+#Example: Starting a Remote Session
+#Once PowerShell Remoting is enabled, you can start a session on the remote computer using:
+
+Enter-PSSession -ComputerName RemoteComputerName
+
+
+#Replace RemoteComputerName with the actual name or IP address of the remote computer. This command opens an interactive PowerShell session on the remote computer, allowing you to execute commands as if you were #sitting at the machine.
+
+# Running Commands
+# While in the session, any command you type runs directly on the remote computer. For example:
+
+Get-Process
+Get-Service
+
+These commands will list processes and services running on the remote computer, not your local machine.
+
+# Exiting the Session
+To leave the remote session and return to your local session, use:
+
+Exit-PSSession
+
+
+This command ends the remote session and returns you to your local PowerShell environment.
+
+# Using Credentials with Enter-PSSession
+# If you need to authenticate as a different user, you can use the -Credential parameter:
+
+
+$creds = Get-Credential
+Enter-PSSession -ComputerName RemoteComputerName -Credential $creds
+
+# This variant prompts you to enter credentials, which will then be used for the remote session.
+
+Considerations
+Security: Be aware that running commands on remote systems can have significant security implications. Ensure you follow best practices and your organization's security policies.
+Network Requirements: PowerShell Remoting requires network connectivity between your local machine and the remote server, and certain ports (like 5985/5986) need to be open on the network firewalls.
+Compatibility: PowerShell Remoting works best when both the local and remote systems are running compatible versions of PowerShell.
+Enter-PSSession is a powerful tool for system administrators, allowing for direct interaction with remote systems as though the commands are being executed locally.
+
+
+
 
 
 
