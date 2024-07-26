@@ -148,6 +148,23 @@ Enter-PSSession -ComputerName RemoteComputerName
 Get-Process
 Get-Service
 
+last server reboots:
+Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object LastBootUpTime
+
+#Running Processes top 10  Ordered by Highest Memory Usage
+
+Get-Process | Sort-Object -Property WorkingSet -Descending | Select-Object -First 10 -Property ProcessName, Id, @{Name="Memory (MB)"; Expression={[math]::round($_.WorkingSet / 1MB, 2)}}
+
+#Running Processes Grouped by Process Name with CPU and Memory Usage
+
+Get-Process | Group-Object Name | Select-Object Name, @{Name="CPU(s)";Expression={($_.Group | Measure-Object CPU -Sum).Sum}}, @{Name="Memory(MB)";Expression={($_.Group | Measure-Object WorkingSet64 -Sum).Sum / 1MB -as [int]}}, Count | Sort-Object "Memory(MB)" -Descending
+
+
+#check space:
+Get-WmiObject Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3} | Select-Object DeviceID, @{Name="FreeSpace(GB)";Expression={$_.FreeSpace / 1GB -as [int]}}
+
+
+
 These commands will list processes and services running on the remote computer, not your local machine.
 
 # Exiting the Session
