@@ -1,0 +1,108 @@
+# This script installs IIS and the features required to run West Wind Web Connection.
+# Make sure you run this script from a Powershell Admin Prompt!
+# Make sure Powershell Execution Policy is bypassed to run these scripts:
+# YOU MAY HAVE TO RUN THIS COMMAND PRIOR TO RUNNING THIS SCRIPT!
+Set-ExecutionPolicy Bypass -Scope Process
+
+$logFile = "D:/temp/install_log.txt"
+$dotnetHostingPath = "D:/temp/dotnet-hosting-8.0.6-win.exe"
+
+function Log-Message {
+    param (
+        [string]$message
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "$timestamp - $message"
+    Add-Content -Path $logFile -Value $logMessage
+}
+
+function Enable-Feature {
+    param (
+        [string]$featureName
+    )
+    try {
+        Enable-WindowsOptionalFeature -Online -FeatureName $featureName -ErrorAction Stop
+        Log-Message "Successfully enabled feature: $featureName"
+    } catch {
+        Log-Message "Failed to enable feature: $featureName. Error: $_"
+    }
+}
+
+function Install-DotNetHosting {
+    param (
+        [string]$filePath
+    )
+    try {
+        if (Test-Path -Path $filePath) {
+            Start-Process -FilePath $filePath -ArgumentList "/quiet" -Wait
+            Log-Message "Successfully installed dotnet-hosting-8.0.6-win.exe"
+        } else {
+            Log-Message "dotnet-hosting-8.0.6-win.exe not found at $filePath"
+        }
+    } catch {
+        Log-Message "Failed to install dotnet-hosting-8.0.6-win.exe. Error: $_"
+    }
+}
+
+Log-Message "Starting IIS feature installation script"
+
+# To list all Windows Features: dism /online /Get-Features
+# LIST ALL IIS FEATURES:
+Get-WindowsOptionalFeature -Online | where FeatureName -like 'IIS-*'
+
+# Enable each feature
+$features = @(
+    "IIS-WebServerRole",
+    "IIS-WebServer",
+    "IIS-CommonHttpFeatures",
+    "IIS-HttpErrors",
+    "IIS-HttpRedirect",
+    "IIS-ApplicationDevelopment",
+    "IIS-ASPNET45",
+    "IIS-NetFxExtensibility45",
+    "NetFx4Extended-ASPNET45",
+    "IIS-HealthAndDiagnostics",
+    "IIS-HttpLogging",
+    "IIS-LoggingLibraries",
+    "IIS-RequestMonitor",
+    "IIS-HttpTracing",
+    "IIS-Security",
+    "IIS-RequestFiltering",
+    "IIS-Performance",
+    "IIS-WebServerManagementTools",
+    "IIS-ManagementConsole",
+    "IIS-MgmtScriptingTools",
+    "IIS-ManagementService",
+    "IIS-IIS6ManagementCompatibility",
+    "IIS-Metabase",
+    "IIS-WMICompatibility",
+    "IIS-LegacyScripts",
+    "IIS-LegacySnapIn",
+    "IIS-BasicAuthentication",
+    "IIS-WindowsAuthentication",
+    "IIS-DigestAuthentication",
+    "IIS-ClientCertificateMappingAuthentication",
+    "IIS-IISCertificateMappingAuthentication",
+    "IIS-URLAuthorization",
+    "IIS-RequestFiltering",
+    "IIS-IPSecurity",
+    "IIS-StaticContent",
+    "IIS-DefaultDocument",
+    "IIS-DirectoryBrowsing",
+    "IIS-HttpErrors",
+    "IIS-HttpRedirect",
+    "IIS-WebDAV",
+    "IIS-WebSockets",
+    "IIS-ApplicationInit",
+    "IIS-HttpCompressionDynamic",
+    "IIS-HttpCompressionStatic"
+)
+
+foreach ($feature in $features) {
+    Enable-Feature -featureName $feature
+}
+
+# Install .NET Core Hosting Bundle
+Install-DotNetHosting -filePath $dotnetHostingPath
+
+Log-Message "Completed IIS feature installation script"
