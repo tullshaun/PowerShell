@@ -106,3 +106,17 @@ foreach ($feature in $features) {
 Install-DotNetHosting -filePath $dotnetHostingPath
 
 Log-Message "Completed IIS feature installation script"
+
+############################################################################
+
+Start-Process -FilePath "D:\temp\dotnet-hosting-8.0.6-win.exe" -ArgumentList "/install /quiet /norestart" -Wait -NoNewWindow
+
+#or
+$installerPath = "D:/temp/dotnet-hosting-8.0.6-win.exe"
+Start-Process -FilePath $installerPath -ArgumentList "/quiet" -Wait
+
+
+
+
+
+
