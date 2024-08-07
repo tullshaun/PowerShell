@@ -1,0 +1,22 @@
+# Allow Remote Clients
+Enable-PSRemoting -Force
+
+# Allow Remote Administration
+Set-DtcNetworkSetting -RemoteAdministrationEnabled $true
+
+# Allow Inbound and Outbound
+Set-DtcNetworkSetting -InboundTransactionsEnabled $true
+Set-DtcNetworkSetting -OutboundTransactionsEnabled $true
+
+# Set Authentication
+Set-DtcNetworkSetting -AuthenticationRequired MutualAuthenticationRequired
+
+# Enable XA Transactions
+Set-DtcTransactionsTraceSetting -TransactionsEnabled $true
+Set-DtcTransactionsTraceSetting -TransactionManagerReenlistmentEnabled $true
+
+# Enable SNA LU 6.2 Transactions
+Set-DtcNetworkSetting -LU62TransactionsEnabled $true
+
+# Set DTC Logon Account
+Set-DtcClusterDefault -DtcName "MSDTC" -LogonAccount "NT AUTHORITY\NetworkService"
