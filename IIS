@@ -1,0 +1,34 @@
+# Define variables
+$configPath = "D:\Apps\WebSiteConfig"
+$password = "*********"
+
+# Export the IIS configuration from the primary server
+Export-IISConfiguration -Path $configPath -EncryptionPassword $password
+
+# Copy the configuration files to the secondary servers (Assuming the secondary servers are accessible)
+$secondaryServers = @("Server2", "Server3")  # Replace with the actual server names or IPs
+
+foreach ($server in $secondaryServers) {
+    $destinationPath = "\\$server\D$\Apps\WebSiteConfig\"
+    if (-Not (Test-Path -Path $destinationPath)) {
+        New-Item -ItemType Directory -Path $destinationPath
+    }
+    Copy-Item -Path "$configPath\*" -Destination $destinationPath -Recurse
+}
+
+# Configure Shared Configuration on each secondary server
+foreach ($server in $secondaryServers) {
+    Invoke-Command -ComputerName $server -ScriptBlock {
+        param ($configPath, $password)
+
+        # Import the IIS configuration
+        Import-IISConfiguration -Path $configPath -EncryptionPassword $password
+
+        # Enable shared configuration
+        Set-WebConfigurationProperty -Filter "/system.applicationHost/configHistory" -Name "path" -Value $configPath -PSPath "IIS:\"
+        Set-WebConfigurationProperty -Filter "/system.applicationHost/sharedConfig" -Name "enabled" -Value "True" -PSPath "IIS:\"
+
+    } -ArgumentList $configPath, $password
+}
+
+Write-Host "IIS Shared Configuration has been successfully set up on all servers."
