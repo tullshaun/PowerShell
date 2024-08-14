@@ -43,3 +43,39 @@ psexec \\server1 net stop "ServiceName"
 
 # Copy Files to the Remote Server
 psexec \\server1 -c C:\local\file.txt \\server1\C$\remote\path\file.txt
+
+
+#multiple servers:
+#Get the Last Reboot Time:
+psexec \\server1,server2,server3 systeminfo | findstr /C:"System Boot Time"
+
+#
+psexec \\server1,server2,server3 net localgroup administrators domain\username /add
+
+
+psexec \\server1,server2,server3 systeminfo | find "System Boot Time"
+
+psexec \\server1,server2,server3 net localgroup administrators DOMAIN\username /add
+
+psexec \\server1,server2,server3 wmic logicaldisk get deviceid,size,freespace
+
+psexec \\server1,server2,server3 tasklist
+
+psexec \\server1,server2,server3 wusa.exe C:\Updates\KB123456.msu /quiet /norestart
+
+psexec \\server1,server2,server3 shutdown /r /t 0
+
+psexec \\server1,server2,server3 cmd /c copy \\sourceserver\share\file.txt C:\Destination\
+
+psexec \\server1,server2,server3 powershell -ExecutionPolicy Bypass -File "\\shareserver\scripts\script.ps1"
+
+psexec \\server1,server2,server3 netsh advfirewall show allprofiles state
+
+psexec \\server1,server2,server3 wevtutil cl System && wevtutil cl Application && wevtutil cl Security
+
+
+
+
+
+
+
