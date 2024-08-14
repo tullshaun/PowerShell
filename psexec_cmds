@@ -1,0 +1,45 @@
+# Add a Domain User to the Local Administrators Group
+psexec \\server1 net localgroup administrators domain\username /add
+
+# Get a List of Users in the Local Administrators Group
+psexec \\server1 net localgroup administrators
+
+# Change a User’s Password
+psexec \\server1 net user username newpassword
+
+# Check Disk Space on C: Drive
+psexec \\server1 dir C:\
+
+# Create a New Local User and Add to Local Administrators
+psexec \\server1 net user newusername newpassword /add
+psexec \\server1 net localgroup administrators newusername /add
+
+# Run a Command Prompt on the Remote Server
+psexec \\server1 cmd
+
+# Check the System Information
+psexec \\server1 systeminfo
+
+# View Running Processes
+psexec \\server1 tasklist
+
+# Kill a Specific Process
+psexec \\server1 taskkill /IM processname.exe /F
+
+# Execute a Script or Program
+psexec \\server1 -u domain\username -p password C:\path\to\your\script.bat
+
+# Deploy and Install Software Remotely
+psexec \\server1 msiexec /i "\\path\to\installer.msi" /quiet
+
+# Reboot the Remote Server
+psexec \\server1 shutdown /r /t 0
+
+# Start a Service
+psexec \\server1 net start "ServiceName"
+
+# Stop a Service
+psexec \\server1 net stop "ServiceName"
+
+# Copy Files to the Remote Server
+psexec \\server1 -c C:\local\file.txt \\server1\C$\remote\path\file.txt
