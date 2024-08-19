@@ -1,0 +1,51 @@
+# Shut down the server
+$serverName = "YourServerName"
+Stop-Computer -ComputerName $serverName -Force
+
+
+$serverName = "YourServerName"
+$pingInterval = 1 # Interval in seconds between pings
+$maxPings = 1000  # Maximum number of pings to attempt
+$startTime = Get-Date
+
+for ($i = 0; $i -lt $maxPings; $i++) {
+    $ping = Test-Connection -ComputerName $serverName -Count 1 -Quiet
+    if (-not $ping) {
+        $downTime = Get-Date
+        $timeTaken = ($downTime - $startTime).TotalSeconds
+        Write-Host "Server $serverName detected as down after $timeTaken seconds."
+        break
+    }
+    Start-Sleep -Seconds $pingInterval
+}
+
+if ($i -eq $maxPings) {
+    Write-Host "Server $serverName did not go down after $maxPings pings."
+}
+
+
+$serverName = "YourServerName"
+$pingInterval = 1 # Interval in seconds between pings
+$logFile = "C:\path\to\logfile.txt"
+$startTime = Get-Date
+
+# Log the start time
+"Test started at: $startTime" | Out-File -FilePath $logFile -Append
+
+# Shut down the server
+Stop-Computer -ComputerName $serverName -Force
+
+# Ping the server until it's down
+for ($i = 0; $i -lt $maxPings; $i++) {
+    $ping = Test-Connection -ComputerName $serverName -Count 1 -Quiet
+    if (-not $ping) {
+        $downTime = Get-Date
+        $timeTaken = ($downTime - $startTime).TotalSeconds
+        "Server $serverName detected as down after $timeTaken seconds." | Out-File -FilePath $logFile -Append
+        break
+    }
+    Start-Sleep -Seconds $pingInterval
+}
+
+# Log completion
+"Test completed at: $(Get-Date)" | Out-File -FilePath $logFile -Append
