@@ -49,3 +49,57 @@ for ($i = 0; $i -lt $maxPings; $i++) {
 
 # Log completion
 "Test completed at: $(Get-Date)" | Out-File -FilePath $logFile -Append
+
+##continiuous ping 
+
+$serverName = "YourServerName"  # Replace with your server name or IP address
+$pingInterval = 1               # Interval in seconds between pings
+$logFile = "C:\path\to\logfile.txt"  # Path to the log file
+$pingFailureDetected = $false   # Flag to start the timer
+$downStartTime = $null          # Time when the server is first detected as down
+$secondsElapsed = 0             # Counter for elapsed seconds
+
+# Log the start of the test
+"Ping test started at: $(Get-Date)" | Out-File -FilePath $logFile -Append
+
+# Start pinging the server
+while ($true) {
+    $ping = Test-Connection -ComputerName $serverName -Count 1 -Quiet
+    
+    if (-not $ping) {
+        if (-not $pingFailureDetected) {
+            # First time the server is detected as down
+            $pingFailureDetected = $true
+            $downStartTime = Get-Date
+            Write-Host "Server $serverName is down. Starting timer..."
+            "Server $serverName detected as down at: $downStartTime" | Out-File -FilePath $logFile -Append
+        }
+        # Increment the seconds elapsed
+        $secondsElapsed++
+        Write-Host "Seconds elapsed since server went down: $secondsElapsed"
+        "Seconds elapsed since server went down: $secondsElapsed" | Out-File -FilePath $logFile -Append
+    } else {
+        if ($pingFailureDetected) {
+            # If server comes back up, reset everything
+            Write-Host "Server $serverName is back online."
+            "Server $serverName is back online at: $(Get-Date)" | Out-File -FilePath $logFile -Append
+            $pingFailureDetected = $false
+            $downStartTime = $null
+            $secondsElapsed = 0
+        }
+    }
+    Start-Sleep -Seconds $pingInterval
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
