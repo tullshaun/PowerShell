@@ -1,0 +1,122 @@
+# Define server and database names
+$serverInstance = "ServerName"
+$databaseName = "DatabaseName"
+
+# 1. Connect to SQL Server and List Databases
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT name FROM sys.databases;"
+
+# 2. Retrieve SQL Server Version
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT @@VERSION;"
+
+# 3. List Tables in a Database
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "SELECT table_name FROM information_schema.tables;"
+
+# 4. Get Database Size
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "EXEC sp_spaceused;"
+
+# 5. Check SQL Server Availability
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT 1 AS 'ConnectionTest';"
+
+# 6. Retrieve SQL Server Agent Jobs
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM msdb.dbo.sysjobs;"
+
+# 7. List All SQL Server Logins
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT name FROM sys.server_principals WHERE type = 'S';"
+
+# 8. Check SQL Server Service Status
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "EXEC xp_servicecontrol 'QUERYSTATE', 'SQLServerAgent';"
+
+# 9. Backup a Database
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "BACKUP DATABASE [$databaseName] TO DISK = 'C:\Backups\$databaseName.bak';"
+
+# 10. Restore a Database
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "RESTORE DATABASE [$databaseName] FROM DISK = 'C:\Backups\$databaseName.bak';"
+
+# 11. Check for Long-Running Queries
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.dm_exec_requests WHERE status = 'running';"
+
+# 12. Retrieve SQL Server Configuration Settings
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "EXEC sp_configure;"
+
+# 13. List All SQL Server Databases and Their Sizes
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT name AS DatabaseName, SUM(size * 8 / 1024) AS SizeMB FROM sys.master_files GROUP BY name;"
+
+# 14. Generate SQL Server Performance Metrics
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.dm_os_performance_counters;"
+
+# 15. List User Permissions
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "SELECT dp.name AS DatabaseRoleName, mp.name AS MemberName FROM sys.database_role_members drm INNER JOIN sys.database_principals dp ON drm.role_principal_id = dp.principal_id INNER JOIN sys.database_principals mp ON drm.member_principal_id = mp.principal_id;"
+
+# 16. Check SQL Server Security Audit Status
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.server_audit_specifications;"
+
+# 17. List All Indexes
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "SELECT * FROM sys.indexes;"
+
+# 18. Retrieve SQL Server Error Logs
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "EXEC sp_readerrorlog;"
+
+# 19. Test Double Hop (Kerberos Delegation) Setup
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT SESSION_USER, USER_NAME();"
+
+# 20. Monitor SQL Server Wait Statistics
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.dm_os_wait_stats;"
+
+# 21. Check SQL Server Health
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "EXEC sp_server_diagnostics;"
+
+# 22. Get SQL Server Blocking Information
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT blocking_session_id, session_id, wait_type, wait_time FROM sys.dm_exec_requests WHERE blocking_session_id <> 0;"
+
+# 23. List SQL Server Active Sessions
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT session_id, login_name, status FROM sys.dm_exec_sessions;"
+
+# 24. Check for SQL Server Corruption
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "DBCC CHECKDB;"
+
+# 25. View Database Growth
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "EXEC sp_spaceused;"
+
+# 26. Execute a SQL Script File
+Invoke-Sqlcmd -ServerInstance $serverInstance -InputFile "C:\Scripts\Script.sql"
+
+# 27. Get Table Row Counts
+Invoke-Sqlcmd -ServerInstance $serverInstance -Database $databaseName -Query "SELECT t.name AS TableName, p.rows AS RowCounts FROM sys.tables t INNER JOIN sys.partitions p ON t.object_id = p.object_id WHERE p.index_id < 2;"
+
+# 28. Get SQL Server Replication Status
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM distribution.dbo.MSdistribution_agents;"
+
+# 29. List SQL Server Linked Servers
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.servers WHERE is_linked = 1;"
+
+# 30. Monitor SQL Server Resource Usage
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "SELECT * FROM sys.dm_os_sys_memory;"
+
+# Start a SQL Server Job named "index"
+Invoke-Sqlcmd -ServerInstance $serverInstance -Query "EXEC msdb.dbo.sp_start_job @job_name = 'index';"
+
+# Define the SQL Server instance
+$serverInstance = "ServerName"  # Replace with your SQL Server instance name
+
+# Define the folder containing the SQL scripts
+$scriptFolder = "C:\temp"
+
+# Get all .sql files in the folder
+$sqlFiles = Get-ChildItem -Path $scriptFolder -Filter "*.sql" | Sort-Object Name
+
+# Iterate through each SQL file and execute it
+foreach ($file in $sqlFiles) {
+    $filePath = $file.FullName
+    Write-Output "Executing script: $filePath"
+    
+    try {
+        # Execute the SQL script
+        Invoke-Sqlcmd -ServerInstance $serverInstance -InputFile $filePath
+        Write-Output "Successfully executed: $filePath"
+    }
+    catch {
+        Write-Output "Failed to execute: $filePath"
+        Write-Output $_.Exception.Message
+    }
+}
+
