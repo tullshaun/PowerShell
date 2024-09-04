@@ -118,5 +118,26 @@ foreach ($file in $sqlFiles) {
         Write-Output "Failed to execute: $filePath"
         Write-Output $_.Exception.Message
     }
+
+
+
+# Define the remote computer name
+$remoteComputer = "RemoteComputerName"  # Replace with your remote computer name
+
+# Define the script block to execute on the remote computer
+$scriptBlock = {
+    # Get list of files and folders on the root of D: drive
+    $items = Get-ChildItem -Path "D:\" -Recurse -Force
+
+    # Create a custom object to store the information
+    $results = $items | Select-Object FullName, @{Name='SizeMB';Expression={[math]::Round($_.Length / 1MB, 2)}}
+
+    # Filter and return only items on the root of D:
+    $results | Where-Object { $_.FullName -like "D:\*" } | Sort-Object FullName
+}
+
+# Run the script block on the remote computer
+Invoke-Command -ComputerName $remoteComputer -ScriptBlock $scriptBlock
+
 }
 
