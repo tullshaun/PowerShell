@@ -1,0 +1,28 @@
+# Ensure PowerShell remoting is enabled on the remote PC:
+# Run this command on the remote PC:
+# Enable-PSRemoting -Force
+
+# Replace remotePCname with the remote PC's name or IP address.
+
+# List user sessions on the remote PC
+Invoke-Command -ComputerName remotePCname -ScriptBlock { query user }
+
+# If you want to log off a specific session, find the session ID first with the above command,
+# then use the following command to log off a specific session:
+# Replace sessionID with the actual ID of the session you want to log off.
+Invoke-Command -ComputerName remotePCname -ScriptBlock { logoff sessionID }
+
+
+##########psexec#################
+
+REM Ensure PsExec is downloaded and available in your PATH.
+REM Replace remotePCname with the remote PC's name or IP address.
+REM Replace username and password with the appropriate credentials.
+
+REM List user sessions on the remote PC
+psexec \\remotePCname -u username -p password query user
+
+REM If you want to log off a specific session, find the session ID first with the above command,
+REM then use the following command to log off a specific session:
+REM Replace sessionID with the actual ID of the session you want to log off.
+psexec \\remotePCname -u username -p password logoff sessionID
