@@ -12,6 +12,10 @@ Invoke-Command -ComputerName remotePCname -ScriptBlock { query user }
 # Replace sessionID with the actual ID of the session you want to log off.
 Invoke-Command -ComputerName remotePCname -ScriptBlock { logoff sessionID }
 
+#find user in windows group
+Get-ADGroupMember -Identity "can\admdba" | Select-Object Name, SamAccountName
+
+
 
 ##########psexec#################
 
