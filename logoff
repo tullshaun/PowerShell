@@ -30,3 +30,19 @@ REM If you want to log off a specific session, find the session ID first with th
 REM then use the following command to log off a specific session:
 REM Replace sessionID with the actual ID of the session you want to log off.
 psexec \\remotePCname -u username -p password logoff sessionID
+
+########################################################################
+
+
+psexec \\Computer1 -accepteula -d "powershell.exe -ExecutionPolicy Bypass -Command 'Get-EventLog -LogName System -Source Microsoft-Windows-Kernel-EventLog -InstanceId 6008 | Select-Object -ExpandProperty Message'"
+
+####################################################################
+$computernames = "Computer1", "Computer2", "Computer3"
+
+foreach ($computer in $computernames) {
+    Invoke-Command -ComputerName $computer -ScriptBlock {
+        # Your remote commands here
+        Write-Host "Running command on: $env:computername"
+        # Example command: Get-Process | Select-Object ProcessName
+    }
+}
