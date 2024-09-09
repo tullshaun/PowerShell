@@ -1,0 +1,53 @@
+Test-Connection www.example.com -Port 443
+
+
+$response = Invoke-WebRequest -Uri "http://www.example.com"
+if ($response.StatusCode -eq 200) {
+    Write-Host "Website is accessible"
+} else {
+    Write-Host "Website is not accessible"
+}
+
+
+$response = Invoke-RestMethod -Uri "http://www.example.com"
+if ($response.StatusCode -eq 200) {
+    Write-Host "Website is accessible"
+} else {
+    Write-Host "Website is not accessible"
+}
+
+
+$response = Invoke-WebRequest -Uri "https://www.example.com"
+
+# Get the HTTP status code
+Write-Host "HTTP Status Code: $($response.StatusCode)"
+
+# Get the content type
+Write-Host "Content Type: $($response.Headers["Content-Type"])"
+
+# Get the title of the page
+Write-Host "Title: $($response.ParsedHtml.Title)"
+
+# Get the body content
+Write-Host "Body Content: $($response.ParsedHtml.Body.InnerHtml)"
+
+
+$servers = "server1", "server2", "server3"
+
+foreach ($server in $servers) {
+    Write-Host "Testing $server"
+    Test-Connection $server -Count 5 -Quiet
+    Write-Host
+}
+
+
+foreach ($server in $servers) {
+    Write-Host "Testing $server"
+    try {
+        $response = Invoke-WebRequest -Uri "http://$server" -TimeoutSec 5
+        Write-Host "HTTP Status Code: $($response.StatusCode)"
+    } catch {
+        Write-Host "Error connecting to $server: $($_.Exception.Message)"
+    }
+    Write-Host
+}
