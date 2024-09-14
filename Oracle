@@ -1,0 +1,31 @@
+#Oracle's client software. tnsping checks if the listener is up and reachable.
+
+$tnsName = "your_tns_name"
+$tnspingOutput = & tnsping $tnsName
+
+if ($tnspingOutput -like "*OK*") {
+    Write-Host "Listener is up."
+} else {
+    Write-Host "Listener is down."
+}
+
+
+#For connecting to the Oracle database from PowerShell, you will need to use an external library like Oracle's ODP.NET (Oracle Data Provider for .NET) or use a generic OLE DB/ODBC driver.
+
+# Load the Oracle Data Provider for .NET assembly
+Add-Type -Path "C:\Path\To\Oracle.ManagedDataAccess.dll"
+
+# Create the connection string
+$connectionString = "User Id=your_username;Password=your_password;Data Source=your_tns_name;"
+
+# Create and open the Oracle connection
+$oracleConnection = New-Object Oracle.ManagedDataAccess.Client.OracleConnection($connectionString)
+
+try {
+    $oracleConnection.Open()
+    Write-Host "Database is up and running."
+} catch {
+    Write-Host "Failed to connect to the database."
+} finally {
+    $oracleConnection.Close()
+}
