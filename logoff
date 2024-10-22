@@ -46,3 +46,29 @@ foreach ($computer in $computernames) {
         # Example command: Get-Process | Select-Object ProcessName
     }
 }
+
+
+
+Lack of Communication Regarding Requirement for Edge:
+We were not informed that constrained delegation was a requirement for Kerberos authentication in Edge. This lack of communication has resulted in us following the standard delegation approach that worked in Internet Explorer.
+
+No Testing or Validation of This Configuration:
+We have not yet tested constrained delegation in our environment to confirm if it resolves the authentication issue. Rolling out this change without thorough testing could introduce new issues.
+
+Production Environment Considerations:
+Our current environment is live, and the service accounts used do not currently rely on constrained delegation. Introducing this change in production without proper validation or a testing window presents significant risks to business continuity.
+
+Potential Impact on Other Systems:
+Implementing constrained delegation may have an impact on other systems or applications that rely on the same service accounts or authentication setup. Without fully understanding the scope of this impact, we could inadvertently disrupt access to other critical systems.
+
+Change Control and Risk Management:
+Introducing constrained delegation represents a significant configuration change that requires proper change control procedures. Before any such change, we need to ensure there is a rollback plan, monitoring in place, and sign-off from relevant stakeholders to avoid unnecessary downtime or user issues.
+
+Lack of Guidance on How to Implement:
+We have not received any detailed guidance or documentation on how to correctly implement constrained delegation in our environment for Edge. Without proper documentation, there's a risk of misconfiguration, which could cause further authentication failures.
+
+Coordination with Security and IT Teams:
+Changing to constrained delegation may require approval or input from security teams, given the sensitive nature of Kerberos authentication. Ensuring this change aligns with organizational security policies is important to avoid any violations or security risks.
+
+Focus on a More Universal Solution:
+Instead of implementing constrained delegation specifically for Edge, we are focusing on a more universal solution that works across browsers and platforms. This approach ensures consistency in authentication behavior and reduces the need for browser-specific configurations.
