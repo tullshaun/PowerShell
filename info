@@ -45,3 +45,20 @@ Need for Backward Compatibility Testing: To streamline the troubleshooting proce
 
 Potential Bottlenecks: Without backward compatibility testing in place, the Edge Configuration Team risks indirectly becoming a blocker in the troubleshooting process, as unresolved browser-specific issues may prevent other teams from efficiently diagnosing and resolving authentication problems.
 
+
+Subject: Critical Blocker for Decommissioning of the Old Report Server
+
+Dear [Management Team],
+
+I want to bring to your attention that the current issues related to SPN configuration, Kerberos delegation, and browser authentication have become a significant blocker for the planned decommissioning of the old report server.
+
+Background:
+We have invested considerable time and effort in setting up delegation, SPNs, and troubleshooting various aspects of this configuration to ensure smooth operations across the live, UAT, and development environments. This uniform setup is critical to ensuring consistent behavior across these environments, allowing us to efficiently troubleshoot and resolve any issues that arise.
+
+Current Situation:
+Unfortunately, we cannot modify the current delegation and authentication setup due to the need to maintain alignment across our live, UAT, and development environments. This consistency is essential to ensure that any issues can be accurately diagnosed and resolved. However, a new environment could potentially follow an updated approach for delegation and authentication in the future.
+
+Impact:
+Until the current issues are resolved, the decommissioning of the old report server cannot proceed. The alignment of our current authentication methods must remain intact for the time being to ensure continuity across environments.
+
+We are committed to resolving this issue as quickly as possible and appreciate your support in addressing these blockers so we can move forward with the decommissioning.
