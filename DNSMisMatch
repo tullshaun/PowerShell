@@ -1,0 +1,46 @@
+# Import the list of server hostnames from a file (one hostname per line)
+# Replace 'C:\path\to\servers.txt' with your file path
+$servers = Get-Content -Path "C:\path\to\servers.txt"
+
+# Output file to save the results
+$outputFile = "C:\path\to\DNS_Mismatch_Results.csv"
+
+# Create an empty array to store results
+$results = @()
+
+foreach ($server in $servers) {
+    try {
+        # Perform forward DNS lookup (Hostname -> IP)
+        $forwardLookup = [System.Net.Dns]::GetHostAddresses($server)
+       
+        # Perform reverse DNS lookup for each resolved IP
+        foreach ($ip in $forwardLookup) {
+            $reverseLookup = [System.Net.Dns]::GetHostEntry($ip)
+           
+            # Compare forward hostname with reverse lookup hostname
+            $isMatch = $server -eq $reverseLookup.HostName
+           
+            # Add the results to the array
+            $results += [PSCustomObject]@{
+                Server        = $server
+                IPAddress     = $ip
+                ReverseLookup = $reverseLookup.HostName
+                Match         = if ($isMatch) { "Match" } else { "Mismatch" }
+            }
+        }
+    } catch {
+        # Catch and log any errors (e.g., DNS resolution failures)
+        $results += [PSCustomObject]@{
+            Server        = $server
+            IPAddress     = "N/A"
+            ReverseLookup = "Error: $_"
+            Match         = "Error"
+        }
+    }
+}
+
+# Export the results to a CSV file
+$results | Export-Csv -Path $outputFile -NoTypeInformation
+
+# Print a message to indicate completion
+Write-Host "DNS mismatch check completed. Results saved to $outputFile"
