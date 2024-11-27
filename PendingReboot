@@ -1,0 +1,8 @@
+$PendingReboot = Get-WmiObject -Namespace "ROOT\CCM\ClientSDK" -Class CCM_ClientUtilities | Select-Object IsRebootPending
+if ($PendingReboot.IsRebootPending -eq $true) {
+    Write-Host "Message: Server is pending reboot."
+    Write-Host "Statistic: 1"
+} else {
+    Write-Host "Message: Server is not pending reboot."
+    Write-Host "Statistic: 0"
+}
