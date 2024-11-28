@@ -227,3 +227,20 @@ if ($criticalLogs) {
     Write-Host "Statistic.ErrorCount: 0"
     exit 0 # Exit with Up (0) status
 }
+
+
+
+
+# Check for Windows Update Failure Events
+$EventLogs = Get-WinEvent -LogName "Microsoft-Windows-WindowsUpdateClient/Operational" -FilterXPath "*[System[EventID=20]]" -MaxEvents 5
+
+if ($EventLogs) {
+    Write-Host "Message.UpdateFailure: Detected Windows Update failures."
+    Write-Host "Statistic.UpdateFailure: 1" # Warning
+    exit 1
+} else {
+    Write-Host "Message.UpdateFailure: No Windows Update failures detected."
+    Write-Host "Statistic.UpdateFailure: 0" # Up
+    exit 0
+}
+
