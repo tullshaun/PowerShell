@@ -1,3 +1,31 @@
+# Minimal Reboot Pending Detection Script
+
+# Define Registry Keys to Check
+$RebootRegKeys = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
+    "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations"
+)
+
+# Check for Pending Reboot
+$PendingReboot = (
+    ($RebootRegKeys | Where-Object { Test-Path $_ }) -or 
+    (New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired
+)
+
+# Output Results in SolarWinds-Compatible Format
+if ($PendingReboot) {
+    Write-Host "Message.RebootStatus: Server is pending reboot"
+    Write-Host "Statistic.RebootStatus: 1"
+} else {
+    Write-Host "Message.RebootStatus: Server is not pending reboot"
+    Write-Host "Statistic.RebootStatus: 0"
+}
+
+
+
+
 # Streamlined Script to Check Pending Reboot
 
 
