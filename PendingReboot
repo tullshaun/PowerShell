@@ -200,3 +200,27 @@ if ($PendingReboot.IsRebootPending -eq $true) {
     Write-Host "Message: Server is not pending reboot."
     Write-Host "Statistic: 0"
 }
+
+
+
+
+
+
+
+
+# Critical System Errors Alert for SolarWinds
+
+# Get critical errors from the System event log in the last 24 hours
+$criticalLogs = Get-EventLog -LogName System -EntryType Error, Critical |
+    Where-Object { $_.TimeGenerated -gt (Get-Date).AddHours(-24) }
+
+# Output results in SolarWinds-compatible format
+if ($criticalLogs) {
+    Write-Host "Message.CriticalErrors: Critical system errors detected in the last 24 hours"
+    Write-Host "Statistic.ErrorCount: $($criticalLogs.Count)"
+    exit 2 # Exit with Warning (2) status
+} else {
+    Write-Host "Message.CriticalErrors: No critical system errors detected in the last 24 hours"
+    Write-Host "Statistic.ErrorCount: 0"
+    exit 0 # Exit with Up (0) status
+}
