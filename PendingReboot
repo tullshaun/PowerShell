@@ -1,3 +1,9 @@
+Exit code 0: Up
+Exit code 1: Warning
+Exit code 2: Critical
+Exit code 3: Unknown
+
+
 # Minimal Reboot Pending Detection Script with Exit Codes
 
 # Define Registry Keys to Check
@@ -28,6 +34,31 @@ if ($PendingReboot) {
 
 
 
+# Streamlined Script to Check Pending Reboot
+
+# Define Registry Keys to Check
+$RebootRegKey1 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"
+$RebootRegKey2 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
+$RebootRegKey3 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress"
+
+# Initialize Pending Reboot Flag
+$PendingReboot = $false
+
+# Check Registry Keys Individually and Combine Results
+if ((Test-Path $RebootRegKey1) -or (Test-Path $RebootRegKey2) -or (Test-Path $RebootRegKey3)) {
+    $PendingReboot = $true
+}
+
+# Output Results in SolarWinds-Compatible Format
+if ($PendingReboot -eq $true) {
+    Write-Host "Message.RebootStatus: Server is pending reboot."
+    Write-Host "Statistic.RebootStatus: 1"
+    exit 2 # Critical
+} else {
+    Write-Host "Message.RebootStatus: Server is not pending reboot."
+    Write-Host "Statistic.RebootStatus: 0"
+    exit 0 # Up
+}
 
 
 
