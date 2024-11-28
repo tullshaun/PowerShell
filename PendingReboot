@@ -3,6 +3,9 @@ Exit code 1: Warning
 Exit code 2: Critical
 Exit code 3: Unknown
 
+#simple
+Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -ErrorAction SilentlyContinue | Select-Object -Property *
+
 
 # Minimal Reboot Pending Detection Script with Exit Codes
 
