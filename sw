@@ -331,6 +331,10 @@ And then change the action to:
 
 C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -Command "C:\scripts\SomeScript.ps1 '${NodeName}'"
 
+
+##eaxmple:
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -Command "& {& "D:\PS_SW_Alerts\omnibusPostEifMsg.ps1" -locale PROD -actionType triggerWarning -messageType Component -alertObjectID ${N=Alerting;M=AlertObjectID} -objectID ${N=SwisEntity;M=Application.ApplicationID} -alertName ${N=Alerting;M=AlertName} -node '${N=SwisEntity;M=Application.Node.Caption}' -sitOrigin '${N=SwisEntity;M=Application.ApplicationAlert.ApplicationName}' -sitDisplayItem '${N=SwisEntity;M=ComponentAlert.ComponentName}' -appName '${N=SwisEntity;M=Application.ApplicationAlert.ApplicationName}' -compAvailability ${N=SwisEntity;M=ComponentAlert.ComponentAvailability} }"
+
 ##########text####################
 
 SolarWinds brings unparalleled automation and intelligence to IT operations, transforming how NOC teams respond to issues and optimize systems. Alerts can be delivered via email, dashboards, or SMS, ensuring timely notifications for critical events like service outages. Beyond notification, SolarWinds automation can proactively restart services if they stop, reducing downtime and eliminating the need for manual intervention. Advanced analytics enable root cause analysis, such as identifying why a server restarted, saving NOC teams 20-30 minutes of investigation time. Additionally, automation extends to patch management, configuration backups, and capacity forecasting, enabling teams to predict and prevent issues before they occur. SolarWinds’ intuitive dashboards provide actionable insights, allowing IT to focus on strategic tasks rather than reactive firefighting, ultimately boosting operational efficiency and ensuring business continuity.
