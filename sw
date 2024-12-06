@@ -342,6 +342,13 @@ SolarWinds brings unparalleled automation and intelligence to IT operations, tra
 
 
 
+#################################################
+
+You are likely running the command as "nt authority\system", not as the user you think you are running it as.  The "Credential for Monitoring" setting is really only setting a variable called ${CREDENTIAL}. I get around this by:
+
+$Creds = Get-Credential '${CREDENTIAL}'
+
+Invoke-SqlCmd -Credential $Creds [and whatever else]
 
 
 
