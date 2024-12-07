@@ -1,3 +1,5 @@
+####Powershell Scripts for use with Solarwinds#############
+
 # test  Write-Host "Message: $($ENV:ComputerName)"
 
 
@@ -349,6 +351,193 @@ You are likely running the command as "nt authority\system", not as the user you
 $Creds = Get-Credential '${CREDENTIAL}'
 
 Invoke-SqlCmd -Credential $Creds [and whatever else]
+
+
+###########################################################################################################################################
+
+https://documentation.solarwinds.com/en/success_center/sam/content/sam-windows-powershell-script-execution-mode.htm?
+
+###########################################################################################################################################
+
+
+
+The following script can be used in the SolarWinds Platform Web Console, or in the PowerShell console. It returns 0 as the exit code and the Hostname of the SolarWinds Platform server (Local Host) or the Hostname of the target machine (Remote Host).
+
+In the PowerShell console, the script returns the local machine Hostname. If the script cannot get the hostname, it returns 1 as the exit code and a “Host not found” message.
+
+$stat = $env:computername;
+if ($stat -ne $null)
+{
+Write-Host "Statistic: 0";
+Write-Host "Message: $stat";
+}
+else
+{
+Write-Host "Statistic: 1";
+Write-Host "Message: Host not found";
+}
+
+#################################################################################################################################################################
+
+
+How to Use ${IP} in a PowerShell Script?
+Here’s an example for getting the Last Boot Time of a server (like ServerA, ServerB, or ServerC).
+
+# SolarWinds provides the IP address of the target server via the ${IP} variable
+$targetServer = "${IP}"
+
+try {
+    # Use Get-CimInstance to query Win32_OperatingSystem on the remote target server
+    $uptime = Get-CimInstance -ComputerName $targetServer -ClassName Win32_OperatingSystem
+
+    # Check if a result was returned
+    if ($uptime) {
+        Write-Host "Message: Last boot time for $targetServer is $($uptime.LastBootUpTime)"
+        Write-Host "Statistic: 1"
+    } else {
+        Write-Host "Message: No data received from $targetServer"
+        Write-Host "Statistic: 0"
+    }
+} catch {
+    # Handle errors gracefully in case the connection to the remote server fails
+    Write-Host "Message: ERROR: Could not retrieve boot time for $targetServer. Error: $($_.Exception.Message)"
+    Write-Host "Statistic: 0"
+}
+
+
+Explanation of the Script
+${IP}:
+
+This variable is automatically replaced with the target server’s IP address at runtime (ServerA, ServerB, ServerC, etc.).
+Get-CimInstance:
+
+This cmdlet queries the Win32_OperatingSystem class on the remote server specified by $targetServer (which holds the value of ${IP}).
+try...catch:
+
+If something goes wrong (like the server is offline, or WinRM is not configured), the error is caught, and a helpful message is output.
+Write-Host "Message:" and Write-Host "Statistic:":
+
+These are required by SolarWinds to log the message and statistic for display on the dashboard.
+
+
+##############################################################################################################################################################
+
+
+SolarWinds PowerShell Script Documentation - Clarified Version
+Overview
+This document explains how SolarWinds executes PowerShell scripts under Local Host and Remote Host execution modes. It clarifies when to use $env:COMPUTERNAME and ${IP}, and explains how to query remote servers like ServerA, ServerB, and ServerC correctly.
+
+Key Concepts
+Concept	Local Host Mode	Remote Host Mode
+Where does the script run?	On the SolarWinds polling engine	Directly on the target node (ServerA, ServerB)
+Does it run on the target server?	No - It runs on the polling server	Yes - It runs directly on the target server
+How does it get the target server's name?	Must use ${IP} to reference target	Uses $env:COMPUTERNAME, no ${IP} required
+Do I need to use ${IP}?	Yes, if you want to reference a remote server	No, the script is already running on the server
+How does SolarWinds know which node to target?	It doesn’t unless you use ${IP}	SolarWinds runs it directly on the target server
+Common cmdlets used	Get-CimInstance -ComputerName ${IP} or Invoke-Command -ComputerName ${IP}	$env:COMPUTERNAME, local WMI or PowerShell
+When to Use $env:COMPUTERNAME vs ${IP}
+Use Case	Use $env:COMPUTERNAME	Use ${IP}
+Get the name of the server where the script is running	Yes (only in Remote Host mode)	No
+Query a remote server from the polling engine	No	Yes (required)
+Run WMI commands on the assigned node	Yes (Remote Host only)	No (SolarWinds binds the node context)
+Query remote server from Local Host execution	No	Yes (required)
+Run locally on the SolarWinds polling server	Yes	No
+Key Variables in SolarWinds PowerShell
+Variable	Description	Where is it used?
+${IP}	The IP address of the target server assigned to the script	Use it when querying remote servers via WMI, WinRM, or network protocols.
+$env:COMPUTERNAME	The hostname of the system where the script is running	Use it when running Remote Host execution directly on the assigned node.
+$TargetServer	Variable you define (could be set to ${IP})	Use it to make the script more readable.
+1️⃣ Example 1: Remote Host Mode (No ${IP} Required)
+Objective: Get the hostname of the assigned node (ServerA, ServerB, or ServerC).
+Execution Mode: Remote Host (SolarWinds runs the script directly on the assigned node).
+Why No ${IP}?: Because the script runs on the target server, $env:COMPUTERNAME returns the hostname of that server.
+powershell
+Copy code
+# This script runs directly on the target server
+$stat = $env:COMPUTERNAME;
+
+if ($stat -ne $null) {
+    Write-Host "Statistic: 0"; # Success
+    Write-Host "Message: The hostname of this server is $stat";
+} else {
+    Write-Host "Statistic: 1"; # Failure
+    Write-Host "Message: Hostname not found";
+}
+Explanation
+Where the script runs: Directly on ServerA, ServerB, or ServerC.
+What $env:COMPUTERNAME returns: The hostname of the server (ServerA, ServerB, or ServerC).
+When to use this: Use this method if you don't want to query remotely but instead run the script directly on the target server.
+No ${IP} needed: SolarWinds knows which node it's running on.
+2️⃣ Example 2: Local Host Mode (Using ${IP})
+Objective: Get the hostname of ServerA, ServerB, or ServerC.
+Execution Mode: Local Host (SolarWinds runs the script on the polling engine).
+Why Use ${IP}?: Because the script is not running on the target server; it's running on the polling server. Therefore, you must explicitly tell it which server to query.
+powershell
+Copy code
+# Get the IP address of the assigned node from SolarWinds
+$targetServer = "${IP}";
+
+try {
+    # Remotely query the target server to get its hostname
+    $stat = Invoke-Command -ComputerName $targetServer -ScriptBlock {
+        $env:COMPUTERNAME
+    }
+
+    if ($stat -ne $null) {
+        Write-Host "Statistic: 0"; # Success
+        Write-Host "Message: The hostname of $targetServer is $stat";
+    } else {
+        Write-Host "Statistic: 1"; # Failure
+        Write-Host "Message: Hostname not found on $targetServer";
+    }
+} catch {
+    Write-Host "Message: ERROR: Could not retrieve hostname for $targetServer. Error: $($_.Exception.Message)";
+    Write-Host "Statistic: 1";
+}
+Explanation
+Where the script runs: On the SolarWinds polling server.
+How it knows which server to query: It uses ${IP} to know the IP of the assigned node (ServerA, ServerB, or ServerC).
+What $env:COMPUTERNAME returns: This would return the hostname of the polling engine, not ServerA, so we must use ${IP} to target ServerA.
+When to use this: Use this method if you are polling the target server remotely from the polling server.
+${IP} is required: Without ${IP}, you will only get information about the polling server.
+3️⃣ Example 3: Local Host Mode (No ${IP}, No Remote Query)
+Objective: Get the hostname of the polling server.
+Execution Mode: Local Host (runs on the polling server, no remote query).
+Why No ${IP}?: Since this script runs only on the polling server, you don't need to reference any remote IP.
+powershell
+Copy code
+# Get the hostname of the polling engine
+$stat = $env:COMPUTERNAME;
+
+if ($stat -ne $null) {
+    Write-Host "Statistic: 0"; # Success
+    Write-Host "Message: The hostname of the polling server is $stat";
+} else {
+    Write-Host "Statistic: 1"; # Failure
+    Write-Host "Message: Hostname not found";
+}
+Explanation
+Where the script runs: On the SolarWinds polling server.
+What $env:COMPUTERNAME returns: It returns the hostname of the polling engine.
+When to use this: Use this method if you only care about the polling server’s information.
+No ${IP} needed: You are not referencing any other servers in this scenario.
+Summary
+Scenario	Where the script runs?	What does $env:COMPUTERNAME return?	Do you need ${IP}?
+Remote Host Mode (runs on ServerA)	ServerA, ServerB, ServerC	Returns the hostname of the server	No
+Local Host Mode (query remote server)	Polling engine	Returns hostname of polling engine	Yes (to target ServerA)
+Local Host Mode (get polling server info)	Polling engine	Returns hostname of polling engine	No
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
