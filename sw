@@ -528,12 +528,28 @@ Local Host Mode (query remote server)	Polling engine	Returns hostname of polling
 Local Host Mode (get polling server info)	Polling engine	Returns hostname of polling engine	No
 
 
+####################################################################################################################################################################################################
+
+A NOC (Network Operations Center) team is a group of IT professionals responsible for monitoring, managing, and maintaining an organization’s IT infrastructure to ensure system availability, performance, and security. The NOC acts as the centralized command center for network, server, and application monitoring, often operating 24/7.
+
+
+Scenario: The NOC team receives an alert that "ServerA memory usage exceeded 90% at 3:15 PM."
+Problem: SolarWinds only shows total memory usage and doesn’t tell you which process caused it.
+Solution:
+
+The NOC team opens the PerfMon log file from C:\PerfLogs.
+They load the blg file into PerfMon and see that at 3:15 PM, the process app.exe was using 2 GB of memory, which was 80% of total memory.
+The NOC team flags this process for review and submits it to the application support team to review the application memory leak.
 
 
 
 
+Management-Friendly Explanation
+"To reduce system resource usage and maintain high visibility, we track per-process CPU and memory usage directly on each server using Windows Performance Monitor (PerfMon). This method runs locally, without relying on external monitoring tools like SolarWinds. By logging process activity every 1 minute and automatically deleting logs older than 24 hours, we maintain visibility into which processes caused spikes in usage without creating unnecessary load on the server or network. This strategy provides detailed, actionable insights into memory spikes and CPU bottlenecks, allowing for faster root cause analysis and fewer unnecessary alerts.
+Configure log file rollover based on time (24 hours) or file size (e.g., 1GB).
 
 
+Alert fatigue in SolarWinds occurs when NOC teams are overwhelmed with excessive, repetitive, or low-priority alerts, leading to missed critical issues. To prevent it, you can fine-tune alert thresholds, use intelligent alert suppression (like time-based conditions or dependencies), and prioritize critical alerts while filtering out noise through alert escalation policies and custom alert actions.
 
 
 
