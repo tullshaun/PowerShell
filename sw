@@ -564,7 +564,7 @@ Management-Friendly Summary
 
 
 
-
+This strategy provides a comprehensive, low-impact monitoring solution by combining SolarWinds alerts and graphs for real-time issue detection with 24-hour PerfMon process-level logs for deep-dive root cause analysis. SolarWinds detects spikes, sends alerts, and shows high-level trends, while PerfMon fills the visibility gap by capturing per-process memory and CPU usage at 1-minute intervals. This seamless integration allows NOC teams to quickly identify and resolve issues without alert fatigue, ensuring faster troubleshooting and better system performance.
 
 
 
