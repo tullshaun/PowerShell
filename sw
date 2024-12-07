@@ -554,7 +554,12 @@ Alert fatigue in SolarWinds occurs when NOC teams are overwhelmed with excessive
 
 
 
-
+A 24-hour PerfMon log with 50 processes, 3 counters, and a 1-minute interval will be about 100-103 MB per day.
+If you track more processes, reduce intervals, or add more counters, log size increases.
+Auto-delete logs older than 24 hours to keep disk usage low.
+Use binary log files (.blg) to save disk space.
+Management-Friendly Summary
+"To efficiently track per-process memory and CPU usage, we log metrics every 1 minute for 24 hours, resulting in an average log size of 100 MB per server per day. To conserve disk space, we configure servers to automatically delete logs older than 24 hours, ensuring a continuous rolling 24-hour window for analysis. This method balances visibility, disk usage, and performance impact, ensuring we capture critical information without excessive overhead."
 
 
 
