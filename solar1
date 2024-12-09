@@ -1,0 +1,71 @@
+The error indicates that the script is attempting to connect to a remote server using PowerShell remoting, but the destination server is not in the TrustedHosts list, and an IP address is being used instead of a hostname. By default, WinRM does not allow connections to IP addresses without explicitly trusting them. Here’s how to resolve this issue:
+
+
+
+1. Add the IP Address to the TrustedHosts List
+
+
+
+Run the following command in PowerShell on the server where the script is being executed:
+
+
+
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "172.22.123.54" -Force
+
+
+
+• If you need to add multiple IPs, separate them with commas:
+
+
+
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "172.22.123.54,172.22.123.55" -Force
+
+
+
+
+
+• To allow all IPs (not recommended for security reasons):
+
+
+
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
+
+
+
+2. Enable WinRM (If Not Already Enabled)
+
+
+
+Ensure WinRM is enabled on both the local and remote servers:
+
+1. Run this command on both machines:
+
+
+
+Enable-PSRemoting -Force
+
+
+
+3. Use Explicit Credentials
+
+
+
+The error mentions “explicit credentials.” Use a credential object in your script for authentication:
+
+
+
+$credential = Get-Credential
+
+Enter-PSSession -ComputerName 172.22.123.54 -Credential $credential
+
+
+
+In SolarWinds, modify the script to include the credentials explicitly.
+
+
+
+4. Switch to a Hostname Instead of an IP Address
+
+
+
+If possible, use the hostname of the server instead of the IP
