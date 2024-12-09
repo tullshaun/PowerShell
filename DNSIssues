@@ -1,0 +1,56 @@
+# List of server names
+$serverNames = @(
+    "server1.domain.com",
+    "server2.domain.com",
+    "server3.domain.com"
+    # Add more server names as needed
+)
+
+# Initialize an array to store the results
+$results = @()
+
+# Loop through each server name
+foreach ($server in $serverNames) {
+    # Create an object to store the result for the current server
+    $result = [PSCustomObject]@{
+        ServerName = $server
+        PingStatus = "Not Checked"
+        DNSLookupStatus = "Not Checked"
+        IPAddress = "N/A"
+    }
+
+    # Ping the server
+    try {
+        $pingResult = Test-Connection -ComputerName $server -Count 2 -Quiet
+        if ($pingResult) {
+            $result.PingStatus = "Success"
+        } else {
+            $result.PingStatus = "Failed"
+        }
+    } catch {
+        $result.PingStatus = "Error: $($_.Exception.Message)"
+    }
+
+    # Perform nslookup on the server
+    try {
+        $dnsResult = nslookup $server
+        if ($dnsResult) {
+            $ipAddress = ($dnsResult | Select-String -Pattern 'Address:').Line -replace 'Address:', ''
+            $result.DNSLookupStatus = "Success"
+            $result.IPAddress = $ipAddress.Trim()
+        } else {
+            $result.DNSLookupStatus = "Failed"
+        }
+    } catch {
+        $result.DNSLookupStatus = "Error: $($_.Exception.Message)"
+    }
+
+    # Add the result for the current server to the results array
+    $results += $result
+}
+
+# Display the results in a table
+$results | Format-Table -AutoSize
+
+# Export the results to a CSV file (optional)
+$results | Export-Csv -Path "C:\temp\ServerPingDNSResults.csv" -NoTypeInformation
