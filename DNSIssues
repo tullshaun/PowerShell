@@ -1,3 +1,255 @@
+
+# Server Connectivity and DNS Resolution Diagnostic Script with File Input
+# Usage Instructions:
+# 1. Create a text file (e.g., servers.txt) with one server name per line
+# 2. Modify the $serverListPath variable below to point to your text file
+# 3. Run the script in PowerShell ISE or PowerShell
+
+# Configuration - Update this path to your servers list text file
+$serverListPath = "C:\Scripts\servers.txt"
+
+# Function to perform comprehensive server connectivity test
+function Test-ServerConnectivity {
+    param (
+        [string]$ServerName
+    )
+
+    # Trim any whitespace from the server name
+    $ServerName = $ServerName.Trim()
+
+    # Skip empty lines
+    if ([string]::IsNullOrWhiteSpace($ServerName)) {
+        return $null
+    }
+
+    # Create a results object to store detailed diagnostics
+    $results = [PSCustomObject]@{
+        ServerName = $ServerName
+        PingStatus = $null
+        PingResponseTime = $null
+        NsLookupStatus = $null
+        NsLookupDetails = $null
+        ErrorDetails = $null
+    }
+
+    try {
+        # Perform Ping Test
+        Write-Host "Testing connectivity to $ServerName..." -ForegroundColor Cyan
+        $pingResult = Test-Connection -ComputerName $ServerName -Count 4 -ErrorAction Stop
+
+        # Successful Ping
+        $results.PingStatus = "Success"
+        $results.PingResponseTime = $pingResult.ResponseTime | Measure-Object -Average | Select-Object -ExpandProperty Average
+        Write-Host "Ping Successful. Average Response Time: $($results.PingResponseTime) ms" -ForegroundColor Green
+
+        # Perform NSLookup
+        try {
+            Write-Host "Performing NSLookup for $ServerName..." -ForegroundColor Cyan
+            $nsLookupResult = Resolve-DnsName -Name $ServerName -ErrorAction Stop
+
+            # Successful NSLookup
+            $results.NsLookupStatus = "Success"
+            $results.NsLookupDetails = $nsLookupResult | ForEach-Object {
+                if ($_.Type -eq 'A' -or $_.Type -eq 'AAAA') {
+                    "$($_.Type): $($_.IPAddress)"
+                }
+            } -Join "; "
+            Write-Host "NSLookup Successful. Resolved IPs: $($results.NsLookupDetails)" -ForegroundColor Green
+        }
+        catch {
+            # NSLookup Failed
+            $results.NsLookupStatus = "Failed"
+            $results.NsLookupDetails = $_.Exception.Message
+            $results.ErrorDetails += "NSLookup Error: $($_.Exception.Message)`n"
+            Write-Host "NSLookup Failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+    catch {
+        # Ping Failed
+        $results.PingStatus = "Failed"
+        $results.ErrorDetails += "Ping Error: $($_.Exception.Message)`n"
+        Write-Host "Ping Failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+
+    return $results
+}
+
+# Main Script Execution
+function Invoke-ServerConnectivityCheck {
+    # Validate input file path
+    if (-not (Test-Path $serverListPath)) {
+        Write-Host "Error: Server list file not found at $serverListPath" -ForegroundColor Red
+        Write-Host "Please create a text file with server names, one per line." -ForegroundColor Yellow
+        return
+    }
+
+    # Read servers from the text file
+    $servers = Get-Content $serverListPath | Where-Object { 
+        -not [string]::IsNullOrWhiteSpace($_) 
+    }
+
+    # Verify servers were read
+    if ($servers.Count -eq 0) {
+        Write-Host "No servers found in the input file. Please check $serverListPath" -ForegroundColor Red
+        return
+    }
+
+    Write-Host "Found $($servers.Count) servers to test" -ForegroundColor Cyan
+
+    $allResults = @()
+
+    foreach ($server in $servers) {
+        Write-Host "`nTesting Server: $server" -ForegroundColor Yellow
+        $serverResults = Test-ServerConnectivity -ServerName $server
+        
+        # Only add non-null results
+        if ($serverResults) {
+            $allResults += $serverResults
+
+            # Detailed Error Reporting
+            if ($serverResults.ErrorDetails) {
+                Write-Host "Detailed Error Report for $server:" -ForegroundColor Magenta
+                Write-Host $serverResults.ErrorDetails -ForegroundColor DarkRed
+            }
+        }
+    }
+
+    # Generate Summary Report
+    Write-Host "`n--- Connectivity Summary Report ---" -ForegroundColor White
+    $allResults | Format-Table -AutoSize
+
+    # Export to CSV for further analysis
+    $reportPath = ".\ServerConnectivityReport_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+    $allResults | Export-Csv -Path $reportPath -NoTypeInformation
+    Write-Host "`nDetailed report exported to: $reportPath" -ForegroundColor Cyan
+
+    # Return results for additional processing if needed
+    return $allResults
+}
+
+# Execute the connectivity check
+Invoke-ServerConnectivityCheck
+
+
+
+
+
+
+
+
+###################################################################################################################
+
+# Modify this line with your actual server names
+$serverList = @("server1.example.com", "server2.example.com", "invalid.server")
+.\Test-ServerConnectivity.ps1 -Servers $serverList
+
+# Server Connectivity and DNS Resolution Diagnostic Script
+param (
+    [Parameter(Mandatory=$true)]
+    [string[]]$Servers
+)
+
+# Function to perform comprehensive server connectivity test
+function Test-ServerConnectivity {
+    param (
+        [string]$ServerName
+    )
+
+    # Create a results object to store detailed diagnostics
+    $results = [PSCustomObject]@{
+        ServerName = $ServerName
+        PingStatus = $null
+        PingResponseTime = $null
+        NsLookupStatus = $null
+        NsLookupDetails = $null
+        ErrorDetails = $null
+    }
+
+    try {
+        # Perform Ping Test
+        Write-Host "Testing connectivity to $ServerName..." -ForegroundColor Cyan
+        $pingResult = Test-Connection -ComputerName $ServerName -Count 4 -ErrorAction Stop
+
+        # Successful Ping
+        $results.PingStatus = "Success"
+        $results.PingResponseTime = $pingResult.ResponseTime | Measure-Object -Average | Select-Object -ExpandProperty Average
+        Write-Host "Ping Successful. Average Response Time: $($results.PingResponseTime) ms" -ForegroundColor Green
+
+        # Perform NSLookup
+        try {
+            Write-Host "Performing NSLookup for $ServerName..." -ForegroundColor Cyan
+            $nsLookupResult = Resolve-DnsName -Name $ServerName -ErrorAction Stop
+
+            # Successful NSLookup
+            $results.NsLookupStatus = "Success"
+            $results.NsLookupDetails = $nsLookupResult | ForEach-Object {
+                "$($_.Type): $($_.IPAddress)"
+            } -Join "; "
+            Write-Host "NSLookup Successful. Resolved IPs: $($results.NsLookupDetails)" -ForegroundColor Green
+        }
+        catch {
+            # NSLookup Failed
+            $results.NsLookupStatus = "Failed"
+            $results.NsLookupDetails = $_.Exception.Message
+            $results.ErrorDetails += "NSLookup Error: $($_.Exception.Message)`n"
+            Write-Host "NSLookup Failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+    catch {
+        # Ping Failed
+        $results.PingStatus = "Failed"
+        $results.ErrorDetails += "Ping Error: $($_.Exception.Message)`n"
+        Write-Host "Ping Failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+
+    return $results
+}
+
+# Main Script Execution
+function Invoke-ServerConnectivityCheck {
+    param (
+        [string[]]$Servers
+    )
+
+    $allResults = @()
+
+    foreach ($server in $Servers) {
+        Write-Host "`nTesting Server: $server" -ForegroundColor Yellow
+        $serverResults = Test-ServerConnectivity -ServerName $server
+        $allResults += $serverResults
+
+        # Detailed Error Reporting
+        if ($serverResults.ErrorDetails) {
+            Write-Host "Detailed Error Report for $server:" -ForegroundColor Magenta
+            Write-Host $serverResults.ErrorDetails -ForegroundColor DarkRed
+        }
+    }
+
+    # Generate Summary Report
+    Write-Host "`n--- Connectivity Summary Report ---" -ForegroundColor White
+    $allResults | Format-Table -AutoSize
+
+    # Optional: Export to CSV for further analysis
+    $reportPath = ".\ServerConnectivityReport_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+    $allResults | Export-Csv -Path $reportPath -NoTypeInformation
+    Write-Host "`nDetailed report exported to: $reportPath" -ForegroundColor Cyan
+}
+
+# Usage Example (Uncomment and modify as needed)
+# $serverList = @("server1.example.com", "server2.example.com", "invalid.server")
+# Invoke-ServerConnectivityCheck -Servers $serverList
+
+
+
+
+
+
+
+
+##################no#################
+
+
+
 # List of server names
 $serverNames = @(
     "server1.domain.com",
