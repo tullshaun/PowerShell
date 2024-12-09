@@ -16,10 +16,11 @@ foreach ($server in $serverNames) {
         ServerName = $server
         PingStatus = "Not Checked"
         DNSLookupStatus = "Not Checked"
-        IPAddress = "N/A"
+        ResolvedIPAddress = "N/A"
+        ErrorMessage = "None"
     }
 
-    # Ping the server
+    # ---------- Ping the server ----------
     try {
         $pingResult = Test-Connection -ComputerName $server -Count 2 -Quiet
         if ($pingResult) {
@@ -28,21 +29,24 @@ foreach ($server in $serverNames) {
             $result.PingStatus = "Failed"
         }
     } catch {
-        $result.PingStatus = "Error: $($_.Exception.Message)"
+        $result.PingStatus = "Error"
+        $result.ErrorMessage = "Ping Error: $($_.Exception.Message)"
     }
 
-    # Perform nslookup on the server
+    # ---------- Perform nslookup on the server ----------
     try {
-        $dnsResult = nslookup $server
-        if ($dnsResult) {
-            $ipAddress = ($dnsResult | Select-String -Pattern 'Address:').Line -replace 'Address:', ''
+        $dnsResult = nslookup $server 2>&1  # Redirect errors to standard output
+        $ipAddress = ($dnsResult | Select-String -Pattern 'Address: \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}').Matches.Value -replace 'Address:', '' | Select-Object -First 1
+        
+        if ($ipAddress) {
             $result.DNSLookupStatus = "Success"
-            $result.IPAddress = $ipAddress.Trim()
+            $result.ResolvedIPAddress = $ipAddress.Trim()
         } else {
             $result.DNSLookupStatus = "Failed"
         }
     } catch {
-        $result.DNSLookupStatus = "Error: $($_.Exception.Message)"
+        $result.DNSLookupStatus = "Error"
+        $result.ErrorMessage += " | DNS Lookup Error: $($_.Exception.Message)"
     }
 
     # Add the result for the current server to the results array
@@ -53,4 +57,7 @@ foreach ($server in $serverNames) {
 $results | Format-Table -AutoSize
 
 # Export the results to a CSV file (optional)
-$results | Export-Csv -Path "C:\temp\ServerPingDNSResults.csv" -NoTypeInformation
+$exportPath = "C:\temp\ServerPingDNSResults.csv"
+$results | Export-Csv -Path $exportPath -NoTypeInformation
+
+Write-Host "Results exported to: $exportPath"
