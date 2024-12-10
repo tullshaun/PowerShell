@@ -69,3 +69,75 @@ In SolarWinds, modify the script to include the credentials explicitly.
 
 
 If possible, use the hostname of the server instead of the IP
+
+
+
+
+How to Roll Back the Change
+You can reset or remove the value from the TrustedHosts setting. Here are a few approaches:
+
+1. Reset TrustedHosts to Default (Empty)
+If you want to completely clear the TrustedHosts list:
+
+powershell
+Copy code
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "" -Force
+This removes all entries from the TrustedHosts list.
+The server will no longer trust any hosts for unencrypted or NTLM-based WinRM connections.
+2. Restore Previous Values
+If you overwrote a previously configured list of trusted hosts and need to restore them:
+
+Check the current value of TrustedHosts on the wrong server (to confirm what’s set):
+
+powershell
+Copy code
+Get-Item -Path WSMan:\localhost\Client\TrustedHosts
+If the current value contains only "172.22.123.54", you can manually re-add the correct entries, if known, using:
+
+powershell
+Copy code
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "previousHost1,previousHost2" -Force
+If you're unsure of the previous values, consult documentation or team members to confirm what should have been in the TrustedHosts list.
+
+3. Allow Wildcard (Optional)
+If you're in an environment where any host is trusted (not recommended for security reasons):
+
+powershell
+Copy code
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
+This restores trust to all hosts but should only be used in low-security environments.
+
+How to Verify the Rollback
+After making the change, verify the TrustedHosts value:
+
+powershell
+Copy code
+Get-Item -Path WSMan:\localhost\Client\TrustedHosts
+If the output is blank (""), no hosts are trusted, which is the default.
+If it contains your intended entries, the rollback or modification was successful.
+Preventing Future Mistakes
+Double-Check the Target Server:
+
+Before running commands, ensure you're on the correct server by using:
+powershell
+Copy code
+hostname
+Document Current Settings:
+
+Before modifying critical configurations like TrustedHosts, always retrieve and document the current settings:
+powershell
+Copy code
+Get-Item -Path WSMan:\localhost\Client\TrustedHosts
+Use Automation for Large Environments:
+
+To avoid manual mistakes, use scripts with targeting logic to ensure commands are run only on the correct servers.
+Conclusion
+If you ran the Set-Item command on the wrong server:
+
+It’s unlikely to cause a significant issue, but it might introduce unnecessary trust for 172.22.123.54.
+To fix it, reset the TrustedHosts list using:
+powershell
+Copy code
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "" -Force
+Verify the configuration with Get-Item and restore any previous trusted hosts as needed.
+
