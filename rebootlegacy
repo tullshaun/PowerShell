@@ -443,3 +443,125 @@ PowerShell Script Icon (representing cause analysis) →
 AI Brain Icon (representing pattern detection) →
 Email Icon (representing alert/notification) →
 Admin Icon with Monitor (representing visibility and decision-making).
+
+
+
+
+
+
+##################logging#########################################
+
+
+Enable PerfMon to Log CPU and Memory on Each Server
+You can set up Performance Monitor (PerfMon) on each server to track CPU and memory every minute. Here’s how to do it.
+
+Steps:
+
+Open Performance Monitor (perfmon.exe).
+Go to Data Collector Sets → User Defined → New → Data Collector Set.
+Name it "System CPU and Memory Log".
+Choose Create Manually (Advanced).
+Performance Counters:
+Click Add Counters.
+Add these two counters:
+Processor(_Total)% Processor Time (to track CPU usage)
+Memory\Available MBytes (to track available memory)
+Sample Interval: Set it to 1 minute (00:01:00).
+File Storage:
+Set it to store in C:\PerfLogs or a location of your choice.
+Rolling Log: Use circular logging (overwrite old data after 24 hours).
+Automate This Process:
+
+You can export this Data Collector Set as an XML and import it into the other 1000 servers.
+Use PowerShell or Group Policy to deploy the PerfMon Data Collector Set across multiple servers.
+2️⃣ Script to Automatically Enable PerfMon on All Servers
+Here’s a PowerShell script to deploy the PerfMon configuration to all 1000 servers.
+
+powershell
+Copy code
+$serverList = @("servera", "serverb", "serverc")  # Add all 1000 server names here
+$perfmonName = "System CPU and Memory Log"
+
+foreach ($server in $serverList) {
+    Write-Host "Configuring PerfMon on $server..."
+    Invoke-Command -ComputerName $server -ScriptBlock {
+        # Create the Data Collector Set
+        New-Item -Path "C:\PerfLogs" -ItemType Directory -ErrorAction SilentlyContinue
+        $counterList = @(
+            "\Processor(_Total)\% Processor Time",
+            "\Memory\Available MBytes"
+        )
+        
+        $dcSetName = "System CPU and Memory Log"
+        $dcPath = "C:\PerfLogs\%COMPUTERNAME%_Perfmon.blg"
+        $interval = 60  # 1 minute interval
+        $duration = 86400  # 24-hour rolling log (24 hours * 3600 seconds)
+
+        $command = "logman.exe create counter `"$dcSetName`" -c `"$($counterList -join ',')`" -si $interval -o `"$dcPath`" -v mmddhhmm -f bincirc -rf $duration"
+        Invoke-Expression $command
+
+        # Start the Data Collector Set
+        logman start $dcSetName
+    }
+}
+What It Does:
+
+Loops through all your servers (servera, serverb, serverc).
+Sets up Performance Counter logs for CPU and Memory.
+Uses a rolling 24-hour log that automatically clears old data.
+Stores the file in C:\PerfLogs on each server.
+3️⃣ When an Issue is Detected (Trigger the Log Collection)
+Now that each server is already collecting logs, you only "activate" the logs if a problem occurs (like high CPU, memory, etc.).
+
+How to Detect Issues
+
+Use SolarWinds Alerts: When SolarWinds detects high CPU or memory, trigger an action.
+Call a Script: The alert can run a PowerShell script that copies the PerfMon log from the affected server to a central storage location for investigation.
+4️⃣ Script to Pull Logs for Root Cause Analysis
+Here’s the PowerShell script to pull the rolling logs from a server.
+
+powershell
+Copy code
+$serverList = @("servera", "serverb", "serverc")  # Replace with your server list
+$centralStorage = "\\centralserver\Logs\ServerPerfLogs"
+
+foreach ($server in $serverList) {
+    $remotePath = "\\$server\C$\PerfLogs"
+    $localPath = "$centralStorage\$server"
+
+    # Create directory for server logs
+    New-Item -Path $localPath -ItemType Directory -Force
+
+    # Copy latest PerfMon files from the remote server
+    Copy-Item -Path "$remotePath\*.blg" -Destination $localPath -Force
+}
+What It Does:
+
+When an issue is detected, SolarWinds can call this script.
+It pulls the latest .blg files (Performance Log) from C:\PerfLogs on each server.
+Copies the logs to a central location for root-cause analysis.
+Pros of This Approach
+Category	Description
+Storage	Uses only 1 rolling log file per server, avoiding centralized data overload.
+Resource Usage	Minimal overhead (PerfMon is lightweight).
+Data Retention	24-hour history is perfect for after-incident analysis.
+On-Demand Use	Logs are always ready but only accessed when needed.
+Easy to Implement	Uses native tools (PerfMon, PowerShell) with no licensing costs.
+Scalability	Works for 1000+ servers as no central server is required to hold logs.
+Potential Issues
+Challenge	Solution
+Disk Space Usage	Use 24-hour rolling logs, limit log size, or store on separate partitions.
+Log File Size	The file size depends on process count and logging interval (usually <100MB/day).
+Log Access	If a server goes down, log files are on the downed server, but you can collect them on a schedule.
+Automation	Automate with PowerShell to ensure logs are always running.
+Summary
+Approach: Use PerfMon on each server to log CPU and memory usage every minute.
+Storage: Keep logs for 24 hours and automatically delete old data.
+Usage: Only access these logs when an issue occurs.
+How it Works:
+Logs are stored locally on each server.
+Use SolarWinds alerts to trigger a log copy for deeper analysis.
+PowerShell automation can ensure logs are running on all 1000 servers.
+Efficiency: Uses minimal network, disk, and CPU overhead.
+Scalability: Can scale to thousands of servers.
+
