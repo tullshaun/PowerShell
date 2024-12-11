@@ -1,0 +1,330 @@
+Here’s how to use PsExec to execute PowerShell commands remotely to retrieve details about Event ID 1074 from the event logs of servera. The command will focus on querying the System log for clean reboot events (Event ID 1074).
+
+Step-by-Step Guide
+1. Prerequisites
+Ensure you have:
+PsExec installed on the system running the script.
+Administrative privileges for both the local and remote machines.
+Port 445 open for communication with servera.
+2. PowerShell Command to Query Event Logs
+The following PowerShell command will query the System event log for Event ID 1074:
+
+powershell
+Copy code
+Get-WinEvent -LogName System -FilterHashtable @{ID=1074} | Select-Object TimeCreated, Message
+3. Command to Use with PsExec
+Here’s how to structure the PsExec command to run the PowerShell query on servera:
+
+cmd
+Copy code
+psexec \\servera -s powershell.exe -Command "Get-WinEvent -LogName System -FilterHashtable @{ID=1074} | Select-Object TimeCreated, Message"
+Explanation:
+\\servera: Specifies the target server.
+-s: Runs the command as SYSTEM on the remote machine.
+powershell.exe -Command: Runs the specified PowerShell command.
+Get-WinEvent -LogName System -FilterHashtable @{ID=1074}: Retrieves only Event ID 1074 from the System log.
+Select-Object TimeCreated, Message: Displays the event timestamp and the message.
+4. Outputting to a File
+To save the output of the query to a file on your local machine, modify the PsExec command like this:
+
+cmd
+Copy code
+psexec \\servera -s powershell.exe -Command "Get-WinEvent -LogName System -FilterHashtable @{ID=1074} | Select-Object TimeCreated, Message | Out-File -FilePath C:\Temp\Event1074_Logs.txt"
+Explanation:
+Out-File -FilePath C:\Temp\Event1074_Logs.txt: Saves the output to a file on the remote server (servera) in the C:\Temp directory.
+5. Copy the Output File to the Local Machine
+Once the log file is created on the remote server, you can copy it back to your local machine using the following command:
+
+cmd
+Copy code
+psexec \\servera -s cmd /c "copy C:\Temp\Event1074_Logs.txt \\<your_local_machine>\C$\Temp\"
+Replace <your_local_machine> with the name of your local machine. Ensure that the C$\Temp directory exists on your machine.
+
+6. Combined Script to Automate the Process
+Here’s a batch script to automate the entire process:
+
+bat
+Copy code
+@echo off
+
+REM Define server
+set SERVER=servera
+
+REM Define remote and local paths
+set REMOTE_PATH=C:\Temp\Event1074_Logs.txt
+set LOCAL_PATH=C:\Temp\Event1074_Logs_%SERVER%.txt
+
+REM Run the PowerShell command remotely
+psexec \\%SERVER% -s powershell.exe -Command "Get-WinEvent -LogName System -FilterHashtable @{ID=1074} | Select-Object TimeCreated, Message | Out-File -FilePath %REMOTE_PATH%"
+
+REM Copy the file back to the local machine
+psexec \\%SERVER% -s cmd /c "copy %REMOTE_PATH% \\%COMPUTERNAME%\C$\Temp\Event1074_Logs_%SERVER%.txt"
+
+REM Confirm completion
+echo Logs have been copied to %LOCAL_PATH%.
+pause
+7. Verify and Review Logs
+Run the batch script or the individual commands in a Command Prompt with administrative privileges.
+Check the C:\Temp directory on your local machine for the file Event1074_Logs_servera.txt.
+Open the file to review the clean reboot events.
+Notes:
+Error Handling: Ensure PsExec has the necessary permissions to access servera. If errors occur, check firewall settings and the availability of administrative shares (ADMIN$).
+Alternative for Older PowerShell: If Get-WinEvent is not available on Windows 2008, use Get-EventLog instead:
+powershell
+Copy code
+Get-EventLog -LogName System -InstanceId 1074 | Select-Object TimeGenerated, Message
+
+
+
+#############################################################################################################################################################################################
+
+
+Using PsExec for Windows Server 2008 to retrieve event logs for reboots or unexpected crashes involves querying the Event Logs for specific Event IDs. The relevant IDs for system reboots or crashes are:
+
+Event ID 41: Kernel-Power (unexpected shutdown/crash).
+Event ID 1074: Clean reboot initiated by a process or user.
+Event ID 6006: Clean shutdown.
+Event ID 6008: Unexpected shutdown.
+Here’s a script to automate this using PsExec:
+
+Script Details
+Tool Required: PsExec from Sysinternals.
+Target Servers: servera, serverb, serverc.
+Query: Use wevtutil to extract the logs since PowerShell features on Windows 2008 are limited.
+Script: GetRebootLogs.bat
+Save the following script as a .bat file:
+
+bat
+Copy code
+@echo off
+setlocal enabledelayedexpansion
+
+REM Define the list of servers
+set SERVERS=servera serverb serverc
+
+REM Path to output results
+set OUTPUT_PATH=C:\RebootLogs
+mkdir "%OUTPUT_PATH%"
+
+echo Querying event logs for reboots and crashes...
+
+REM Loop through each server
+for %%S in (%SERVERS%) do (
+    echo ==========================================
+    echo Connecting to %%S...
+    echo ==========================================
+
+    REM Use PsExec to run wevtutil on the remote server
+    psexec \\%%S -s -h cmd /c ^
+    "wevtutil qe System /q:*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and (EventID=41)]] /f:text > %%TEMP%%\Reboot_Crash_Logs.txt & ^
+    wevtutil qe System /q:*[System[Provider[@Name='EventLog'] and (EventID=6008)]] /f:text >> %%TEMP%%\Reboot_Crash_Logs.txt & ^
+    wevtutil qe System /q:*[System[Provider[@Name='EventLog'] and (EventID=6006 or EventID=1074)]] /f:text >> %%TEMP%%\Reboot_Crash_Logs.txt & ^
+    copy %%TEMP%%\Reboot_Crash_Logs.txt \"%OUTPUT_PATH%\%%S_RebootLogs.txt\" & ^
+    del %%TEMP%%\Reboot_Crash_Logs.txt"
+
+    echo Logs collected for %%S. See %%OUTPUT_PATH%%\%%S_RebootLogs.txt
+)
+
+echo Logs are saved in %OUTPUT_PATH%.
+pause
+Explanation of the Script:
+Define Servers:
+
+The script loops through the list of servers (servera, serverb, serverc) defined in the SERVERS variable.
+Log Queries:
+
+wevtutil queries the System event log for relevant events:
+Event ID 41: Kernel-Power (unexpected crashes).
+Event ID 6008: Unexpected shutdowns.
+Event IDs 6006, 1074: Clean shutdowns/reboots.
+Output Location:
+
+Logs are saved in C:\RebootLogs\ on the machine running the script. Each server gets a separate log file (servera_RebootLogs.txt, etc.).
+PsExec Usage:
+
+psexec \\server -s -h runs the command on the remote server with system privileges (-s) and ensures elevated rights (-h).
+Temporary Files:
+
+Logs are temporarily saved on the remote machine in %TEMP% and copied back to the local system.
+Steps to Execute:
+Download PsExec:
+
+Download PsExec from Sysinternals.
+Copy PsExec to a Directory in the PATH:
+
+Ensure PsExec.exe is accessible globally (e.g., place it in C:\Windows\System32).
+Run the Script:
+
+Save the script as GetRebootLogs.bat.
+Open Command Prompt as Administrator.
+Run the script: GetRebootLogs.bat.
+Review Logs:
+
+Check the C:\RebootLogs directory for the log files for each server.
+Notes:
+Administrative Privileges: Ensure you have admin access to the target servers.
+Firewall Rules: Make sure PsExec can communicate with the servers (default TCP port 445 must be open).
+Compatibility: This script is designed for Windows 2008. For newer servers, PowerShell remoting with advanced cmdlets like Get-WinEvent is recommended.
+
+#############################################################################################################################################################################################
+
+
+
+
+
+
+
+
+
+
+The error message indicates that the PowerShell script is unable to connect to the specified IP address (172.22.123.54) due to an issue with WinRM (Windows Remote Management). Here’s how you can resolve the issue:
+
+
+
+Steps to Resolve
+
+1. Enable WinRM on the Target Machine
+
+• Open PowerShell on the target machine (172.22.123.54) as an administrator.
+
+• Run the following command to enable WinRM:
+
+
+
+Enable-PSRemoting -Force
+
+
+
+
+
+2. Add the IP Address to the TrustedHosts List
+
+• On the machine running the script, add the target IP address to the TrustedHosts list:
+
+
+
+Set-Item wsman:\localhost\Client\TrustedHosts -Value "172.22.123.54" -Force
+
+
+
+
+
+• If multiple IP addresses need to be trusted, use a comma-separated list:
+
+
+
+Set-Item wsman:\localhost\Client\TrustedHosts -Value "172.22.123.54,192.168.1.1" -Force
+
+
+
+
+
+3. Ensure HTTPS or Credentials Are Set
+
+• If you are not using HTTPS, ensure explicit credentials are provided in the script. Use the following command to create a credential object:
+
+
+
+$cred = Get-Credential
+
+
+
+
+
+• Pass $cred to the Invoke-Command or Enter-PSSession commands in your script.
+
+
+
+4. Test Network Connectivity
+
+• Make sure the machine running the script can ping the target machine:
+
+
+
+Test-Connection -ComputerName 172.22.123.54
+
+
+
+
+
+5. Check the WinRM Service
+
+• Ensure the WinRM service is running on both the target and source machines:
+
+
+
+Get-Service -Name WinRM
+
+
+
+
+
+• If the service is not running, start it:
+
+
+
+Start-Service -Name WinRM
+
+
+
+
+
+6. Firewall Rules
+
+• Ensure that firewall rules on both machines allow WinRM traffic. Open port 5985 (HTTP) or 5986 (HTTPS):
+
+
+
+New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM HTTP" -Protocol TCP -LocalPort 5985 -Action Allow
+
+
+
+
+
+7. Verify PowerShell Script
+
+• Ensure your script explicitly specifies the IP address and uses the correct credentials. For example:
+
+
+
+Invoke-Command -ComputerName 172.22.123.54 -Credential $cred -ScriptBlock { 
+
+    # Your code here
+
+}
+
+
+
+
+
+8. Restart WinRM
+
+• On the target machine, restart the WinRM service:
+
+
+
+Restart-Service -Name WinRM
+
+
+
+
+
+
+
+Additional Debugging
+
+
+
+If the issue persists, run the following diagnostic command:
+
+
+
+winrm id
+
+
+
+This checks whether WinRM is properly configured on the target machine.
+
+
+
+After performing these steps, your script should be able to connect and execute the desired commands on the remote machine.
