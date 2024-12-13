@@ -1,1 +1,29 @@
 
+psexec \\servername -u username -p password cmd.exe /c "wevtutil qe System /q:"*[System[(EventID=1074 or EventID=6005 or EventID=6006 or EventID=6008)]]" /f:text /c:5"
+
+This command will retrieve:
+
+Event ID 1074: System shutdown/reboot
+Event ID 6005: Event log service started (system boot)
+Event ID 6006: Event log service stopped (system shutdown)
+Event ID 6008: Unexpected system shutdown
+
+Alternatively, you can use:
+cmdCopypsexec \\servername -u username -p password cmd.exe /c "systeminfo"
+This will provide system uptime and other related information.
+For more detailed crash analysis, you might want to check the minidump files:
+cmdCopypsexec \\servername -u username -p password cmd.exe /c "dir C:\Windows\Minidump"
+Additional useful commands:
+
+To get last boot time:
+
+cmdCopypsexec \\servername -u username -p password cmd.exe /c "net statistics workstation"
+
+To get system uptime:
+
+cmdCopypsexec \\servername -u username -p password cmd.exe /c "net statistics server"
+Recommendations:
+
+Ensure you have administrative credentials
+Replace servername, username, and password with your actual server details
+Be cautious with credentials and use secure methods of authentication
