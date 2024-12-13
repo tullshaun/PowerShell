@@ -1,4 +1,7 @@
 
+If a dashboard can't clearly show where a critical issue is and what caused it, it's not a dashboard — it's a decoration.
+It’s like that plastic flamingo in my gran’s living room — it’s just… WHY GRAN, WHY?
+
 psexec \\servername -u username -p password cmd.exe /c "wevtutil qe System /q:"*[System[(EventID=1074 or EventID=6005 or EventID=6006 or EventID=6008)]]" /f:text /c:5"
 
 This command will retrieve:
