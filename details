@@ -1,0 +1,45 @@
+"Initially, our future presented a field of potential probabilities; however, delays and the installation of product X collapsed this into a deterministic trajectory, where the installation of product Y is now set to fail. Therefore, we need to raise our collective energy, refocus our actions, and align with the right course
+
+
+
+SolarWinds Monitoring, Security, and Performance Management:
+
+
+
+I proactively monitor the environment using SolarWinds to ensure system stability, detect server crashes, and identify potential performance or availability issues. I regularly apply security patches and perform version upgrades on the SolarWinds platform to maintain compliance and protect against vulnerabilities.
+
+
+
+In addition, I track system performance trends and resource utilization to identify potential issues before they impact operations. By analyzing historical data and performance metrics, I’m able to highlight bottlenecks early and implement corrective actions to optimize resource usage and maintain a healthy infrastructure.
+
+
+
+I also design and maintain custom dashboards for various teams, enabling them to easily visualize key metrics and quickly identify issues relevant to their systems or services.
+
+
+
+As the environment grows, I continuously review and evolve the architecture of the SolarWinds platform, ensuring it scales appropriately and maintains optimal performance to support comprehensive monitoring across all critical infrastructure components.
+
+
+Report Server Migration – Phase 1 and Phase 2
+
+
+
+As part of the decommissioning of the legacy, unsupported report server, I led the migration of reports to a new, supported reporting environment.
+
+
+
+Phase 1 involved the end-to-end migration of reports, including:
+
+
+
+Performing extensive testing and validation to ensure report functionality
+Managing report subscriptions, linked files, and associated email configurations
+Coordinating user acceptance testing (UAT) and providing hands-on support
+Delivering the development, test, and system integration testing (SIT) environments to mirror production
+Liaising with stakeholders and users to confirm successful migration
+
+
+
+
+Phase 2 will involve the installation and configuration of SQL Server 2025 to support a bulk upgrade of all remaining reports. This phase will include preparing the new reporting infrastructure, ensuring compatibility, and streamlining the report upgrade and deployment process.
