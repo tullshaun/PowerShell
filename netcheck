@@ -1,4 +1,7 @@
 
+=TRIM(RIGHT(A2,LEN(A2)-FIND(":",A2,FIND(":",A2)+1)))
+
+
 $servers = @("vmsqld08", "MSQLT03", "MSQLD68")
 $targetRelease = 394802  # .NET Framework 4.6.2
 
