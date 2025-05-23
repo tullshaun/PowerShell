@@ -1,3 +1,36 @@
+
+$servers = @("vmsqld08", "MSQLT03", "MSQLD68")
+$targetRelease = 394802  # .NET Framework 4.6.2
+
+foreach ($server in $servers) {
+    Write-Host "Checking .NET Framework on $server..."
+
+    try {
+        $release = Invoke-Command -ComputerName $server -ScriptBlock {
+            Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" -Name Release
+        }
+
+        $foundRelease = $release.Release
+
+        if ($foundRelease -ge $targetRelease) {
+            Write-Host "$server: .NET Framework 4.6.2 or higher is installed (Release: $foundRelease)" -ForegroundColor Green
+        } else {
+            Write-Host "$server: .NET Framework 4.6.2 is NOT installed (Found Release: $foundRelease)" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "$server: Could not connect or registry path not found." -ForegroundColor Red
+    }
+}
+
+
+
+
+
+
+
+
+
+
 $servers = @("server1", "server2", "server3")
 $targetRelease = 394802  # .NET Framework 4.6.2
 
