@@ -292,6 +292,47 @@ $results = Invoke-Command -ComputerName $servers -ScriptBlock {
 # 3. Display the collected results from all servers
 # The PSComputerName property is automatically added by Invoke-Command
 $results | Format-Table PSComputerName, ResourceName, ResourceType, State -AutoSize
+
+
+############################################################################################
+
+Yes, you absolutely can. Using Invoke-Command with a -ScriptBlock is the perfect way to run that specific one-liner against multiple servers.
+
+The command inside the script block runs on each remote machine, and Invoke-Command gathers the results for you.
+
+How to Run It
+This example shows how to run your command against a list of servers and format the output into a clean table.
+
+PowerShell
+
+# 1. List one node from each cluster you want to query
+$servers = @(
+    "Cluster1-Node1",
+    "Cluster2-NodeA",
+    "Cluster3-Server1"
+)
+
+# 2. Run your specific command on all servers
+Invoke-Command -ComputerName $servers -ScriptBlock {
+    (Get-ClusterQuorum).QuorumResource | Get-ClusterParameter
+} | Select-Object PSComputerName, Name, Value
+What Happens
+Invoke-Command connects to each server in your $servers list.
+
+It runs the command (Get-ClusterQuorum).QuorumResource | Get-ClusterParameter on each one.
+
+The results are sent back to your computer. The Select-Object command then formats everything into a single table.
+
+The PSComputerName column is automatically added so you can see which server each result came from.
+
+Example Output
+Your final output will look something like this, making it easy to compare the witness configuration across all your clusters:
+
+PSComputerName   Name             Value
+--------------   ----             -----
+Cluster1-Node1   SharePath        \\FileServer\Witness1
+Cluster2-NodeA   SharePath        \\FileServer\Witness2
+Cluster3-Server1 CloudWitnessName MyAzureStorageAccount
 In this example, the entire script for finding quorum votes is placed inside the -ScriptBlock. Invoke-Command runs it on each server in the $servers list, collects all the results, and adds the PSComputerName property so you know which result came from which cluster.
 
 
