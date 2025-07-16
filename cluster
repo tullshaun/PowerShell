@@ -167,3 +167,131 @@ Total Quorum Votes: 4
 
 
 
+
+
+
+
+
+
+
+
+Option 1: List Servers Directly in the Script
+This method is great for a quick, one-time check.
+
+Define your list of servers (use the name of one node from each cluster).
+
+Run Invoke-Command to execute the script block on each server in the list.
+
+PowerShell
+
+# 1. Create an array with the names of one node from each cluster
+$servers = @(
+    "Cluster1-Node1",
+    "Cluster2-NodeA",
+    "Cluster3-Server1"
+    # Add all 20 server names here
+)
+
+# 2. Run the command against all servers in the list
+Invoke-Command -ComputerName $servers -ScriptBlock {
+    # This block runs on each remote server
+    (Get-ClusterQuorum).QuorumResource | Get-ClusterParameter
+} | Select-Object PSComputerName, Name, Value, Type
+The output will be a single table showing the results from all servers. The PSComputerName column tells you which server the result came from.
+
+Option 2: Read Servers from a Text File (Recommended)
+This is the best practice for managing a list of 20 servers, as you can easily edit the file without changing the script.
+
+Create a simple text file (e.g., C:\Temp\servers.txt). List one node from each cluster, with one server name per line.
+
+servers.txt:
+
+Cluster1-Node1
+Cluster2-NodeA
+Cluster3-Server1
+Run this script. It will read the server names from the file and execute the command.
+
+PowerShell
+
+# 1. Get the list of servers from your text file
+$servers = Get-Content -Path "C:\Temp\servers.txt"
+
+# 2. Run the command against all servers in the list
+Invoke-Command -ComputerName $servers -ScriptBlock {
+    # This block runs on each remote server
+    (Get-ClusterQuorum).QuorumResource | Get-ClusterParameter
+} | Select-Object PSComputerName, Name, Value, Type
+⚠️ Important Prerequisites
+For this to work, you need to ensure the following:
+
+PowerShell Remoting: WinRM (Windows Remote Management) must be enabled on all the target servers. You can enable it by running Enable-PSRemoting -Force in an admin PowerShell window on each server.
+
+Permissions: You must run the script from an account that has administrative privileges on all the remote servers.
+
+Network/Firewall: Your network firewall must allow WinRM traffic between your computer and the remote servers (typically TCP port 5985 for HTTP).
+
+
+
+
+
+
+
+can i use the invoke-command with the -scriptblock as well?
+
+
+
+Show thinking
+Yes, absolutely. Using the -ScriptBlock parameter is the primary and most powerful way to use Invoke-Command. It's where you place the PowerShell code you want to execute on the remote computers.
+
+You can put anything from a simple one-liner to a complex, multi-line script inside the curly braces {} of a script block.
+
+Example with a Larger Script
+Here's how you could run the more detailed script from our previous conversation (the one that lists all voting members) on multiple clusters at once.
+
+PowerShell
+
+# 1. Define your list of cluster nodes (one node from each cluster)
+$servers = @(
+    "Cluster1-Node1",
+    "Cluster2-NodeA",
+    "Cluster3-Server1"
+)
+
+# 2. Use Invoke-Command with a multi-line ScriptBlock
+$results = Invoke-Command -ComputerName $servers -ScriptBlock {
+    # --- This entire script runs on each remote server ---
+
+    $VotingMembers = @()
+
+    # Get nodes with a vote
+    $VotingNodes = Get-ClusterNode | Where-Object { $_.DynamicWeight -eq 1 }
+    foreach ($Node in $VotingNodes) {
+        $VotingMembers += [PSCustomObject]@{
+            ResourceName = $Node.Name
+            ResourceType = "Node"
+            State        = $Node.State
+        }
+    }
+
+    # Get the witness resource
+    $WitnessResource = (Get-ClusterQuorum).QuorumResource
+
+    # Check if a witness is configured and online
+    if ($null -ne $WitnessResource -and $WitnessResource.State -eq 'Online') {
+        $VotingMembers += [PSCustomObject]@{
+            ResourceName = $WitnessResource.Name
+            ResourceType = $WitnessResource.ResourceType.Name
+            State        = $WitnessResource.State
+        }
+    }
+
+    # This is the output from the script block
+    return $VotingMembers
+}
+
+# 3. Display the collected results from all servers
+# The PSComputerName property is automatically added by Invoke-Command
+$results | Format-Table PSComputerName, ResourceName, ResourceType, State -AutoSize
+In this example, the entire script for finding quorum votes is placed inside the -ScriptBlock. Invoke-Command runs it on each server in the $servers list, collects all the results, and adds the PSComputerName property so you know which result came from which cluster.
+
+
