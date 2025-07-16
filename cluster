@@ -1,0 +1,30 @@
+(Get-ClusterQuorum).QuorumResource | Get-ClusterParameter
+
+This one-line script gets the cluster's quorum resource and then lists its parameters, which will include the witness path.
+
+PowerShell
+
+(Get-ClusterQuorum).QuorumResource | Get-ClusterParameter
+What the output means:
+
+If you're using a File Share Witness, the output will include a property named SharePath, showing the UNC path to the witness share (e.g., \\Server\WitnessShare).
+
+If you're using a Disk Witness, the output will show the details of the cluster disk being used.
+
+If you're using a Cloud Witness, you'll see properties like CloudWitnessName and CloudAccountName.
+
+View Node Quorum Votes
+This script lists each node in the cluster and shows its configured vote and its current, dynamic vote.
+
+PowerShell
+
+Get-ClusterNode | Select-Object Name, State, NodeWeight, DynamicWeight
+What the output columns mean:
+
+Name: The name of the cluster node.
+
+State: The current status of the node (e.g., Up, Down).
+
+NodeWeight: This is the configured vote. A value of 1 means the node has a vote. A value of 0 means it doesn't. You can set this manually to remove a node's vote.
+
+DynamicWeight: This is the actual vote the node currently has. The cluster automatically manages this. A running node will have a DynamicWeight of 1. If a node goes down, the cluster changes its DynamicWeight to 0 to maintain the quorum.
