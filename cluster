@@ -28,3 +28,142 @@ State: The current status of the node (e.g., Up, Down).
 NodeWeight: This is the configured vote. A value of 1 means the node has a vote. A value of 0 means it doesn't. You can set this manually to remove a node's vote.
 
 DynamicWeight: This is the actual vote the node currently has. The cluster automatically manages this. A running node will have a DynamicWeight of 1. If a node goes down, the cluster changes its DynamicWeight to 0 to maintain the quorum.
+
+# Create an array to hold the names of all voting members
+$VotingMembers = @()
+
+# --- Nodes ---
+# Get all cluster nodes that have a current vote (DynamicWeight = 1)
+$VotingNodes = Get-ClusterNode | Where-Object { $_.DynamicWeight -eq 1 }
+foreach ($Node in $VotingNodes) {
+    # Add each voting node to our list
+    $VotingMembers += [PSCustomObject]@{
+        ResourceName = $Node.Name
+        ResourceType = "Node"
+        State        = $Node.State
+    }
+}
+
+# --- Witness ---
+# Get the witness resource from the quorum configuration
+$WitnessResource = (Get-ClusterQuorum).QuorumResource
+
+# Check if a witness is configured and if it's currently Online
+if ($null -ne $WitnessResource -and $WitnessResource.State -eq 'Online') {
+    # Add the witness to our list
+    $WitnessResourceName = switch ($WitnessResource.ResourceType.Name) {
+        "File Share Witness" { (Get-ClusterParameter -InputObject $WitnessResource -Name "SharePath").Value }
+        "Disk Witness"       { "Disk Witness on $($WitnessResource.Name)" }
+        "Cloud Witness"      { (Get-ClusterParameter -InputObject $WitnessResource -Name "CloudWitnessName").Value }
+        default              { $WitnessResource.Name }
+    }
+    
+    $VotingMembers += [PSCustomObject]@{
+        ResourceName = $WitnessResourceName
+        ResourceType = $WitnessResource.ResourceType.Name
+        State        = $WitnessResource.State
+    }
+}
+
+# --- Display Results ---
+Write-Host "The following resources currently have a vote in the quorum:" -ForegroundColor Green
+$VotingMembers | Format-Table -AutoSize
+
+Write-Host "Total Votes: $($VotingMembers.Count)" -ForegroundColor Yellow
+
+
+
+Script 1: Find the Witness Server in a Windows Failover Cluster
+This script retrieves the witness (either file share or disk witness) configuration of the cluster:
+
+powershell
+Copy
+Edit
+# Requires: Run as Administrator, with Failover Clustering tools installed
+
+Import-Module FailoverClusters
+
+# Get the current cluster name
+$cluster = Get-Cluster
+
+# Display the quorum configuration
+$quorum = Get-ClusterQuorum
+Write-Host "`nQuorum Type: $($quorum.QuorumType)"
+
+# Check for witness details
+switch ($quorum.QuorumType) {
+    "NodeAndDiskMajority" {
+        Write-Host "Witness Type: Disk"
+        Write-Host "Witness Resource: $($quorum.WitnessResource)"
+    }
+    "NodeAndFileShareMajority" {
+        Write-Host "Witness Type: File Share"
+        Write-Host "Witness Share Path: $($quorum.WitnessSharePath)"
+    }
+    default {
+        Write-Host "No witness configured or not applicable for quorum type: $($quorum.QuorumType)"
+    }
+}
+📊 Script 2: Show Voting Resources and Quorum Votes
+This script lists all nodes and identifies which have a vote in the quorum, and also shows the witness vote:
+
+powershell
+Copy
+Edit
+# Requires: Run as Administrator, with Failover Clustering tools installed
+
+Import-Module FailoverClusters
+
+# Get cluster nodes and their vote status
+Write-Host "`nNode Quorum Votes:"
+Get-ClusterNode | ForEach-Object {
+    $node = $_
+    $props = Get-ClusterNode $node.Name | Select-Object Name, NodeWeight
+    Write-Host " - $($props.Name): Vote = $($props.NodeWeight)"
+}
+
+# Get cluster quorum info
+$quorum = Get-ClusterQuorum
+
+# Display witness vote if applicable
+switch ($quorum.QuorumType) {
+    "NodeAndDiskMajority" {
+        Write-Host "`nWitness Vote: 1 (Disk Witness)"
+        Write-Host "Witness Resource: $($quorum.WitnessResource)"
+    }
+    "NodeAndFileShareMajority" {
+        Write-Host "`nWitness Vote: 1 (File Share Witness)"
+        Write-Host "Witness Share Path: $($quorum.WitnessSharePath)"
+    }
+    "NodeMajority" {
+        Write-Host "`nWitness Vote: 0 (No witness configured)"
+    }
+    default {
+        Write-Host "`nWitness information is not available for quorum type: $($quorum.QuorumType)"
+    }
+}
+
+# Total Votes Calculation
+$totalVotes = (Get-ClusterNode).NodeWeight | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+if ($quorum.QuorumType -match "Witness") {
+    $totalVotes += 1
+}
+Write-Host "`nTotal Quorum Votes: $totalVotes"
+✅ Example Output (from both scripts):
+yaml
+Copy
+Edit
+Quorum Type: NodeAndFileShareMajority
+Witness Type: File Share
+Witness Share Path: \\fileserver\clusterwitness$
+
+Node Quorum Votes:
+ - NODE1: Vote = 1
+ - NODE2: Vote = 1
+ - NODE3: Vote = 1
+
+Witness Vote: 1 (File Share Witness)
+Total Quorum Votes: 4
+
+
+
