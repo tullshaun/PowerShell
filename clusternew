@@ -1,0 +1,195 @@
+From your image:
+
+
+
+Node VMSQLP85 has:
+Assigned Vote = 1
+Current Vote = 0
+
+
+
+
+
+This means the node should have a vote, but currently it is not contributing to quorum. That can happen for several reasons:
+
+
+
+
+
+
+
+
+
+🔍 Possible Causes:
+
+
+
+
+
+Node is not part of current quorum
+It might be marked as “Up” in the Cluster Manager, but not healthy enough to participate in quorum.
+Node is in a “Paused” or “Isolated” state
+Even though its status shows “Up,” it could be paused or in a state where it is not participating in cluster voting.
+Witness configuration
+If you’re using dynamic quorum or dynamic witness, the cluster may have adjusted votes dynamically to maintain quorum stability.
+Network communication issues
+The node might not be able to communicate properly with the other nodes even though it appears “Up”.
+Manually evicted or recently rejoined
+The node might have been recently added or recovered and not fully reintegrated into voting.
+
+
+
+
+
+
+
+
+
+
+✅ How to Check and Resolve:
+
+
+
+
+
+
+
+1. 
+
+Check node status more deeply
+
+
+
+
+
+Run this in PowerShell on any cluster node:
+
+Get-ClusterNode
+
+(Get-ClusterNode "VMSQLP85").NodeWeight
+
+(Get-Cluster).QuorumArbitrationTimeMax
+Get-ClusterQuorum
+
+(Get-Cluster).QuorumArbitrationTimeMax
+Get-ClusterQuorum
+
+
+
+# Get basic cluster info
+Write-Host "===== Cluster Quorum Summary =====" -ForegroundColor Cyan
+Get-ClusterQuorum
+
+Write-Host "`n===== Node Voting Status =====" -ForegroundColor Cyan
+$clusterNodes = Get-ClusterNode
+
+$nodeInfo = $clusterNodes | ForEach-Object {
+    [PSCustomObject]@{
+        NodeName      = $_.Name
+        Status        = $_.State
+        NodeWeight    = $_.NodeWeight
+        AssignedVote  = (Get-ClusterNode $_.Name).NodeWeight
+        CurrentVote   = (Get-Cluster | Get-ClusterGroup "Cluster Group" | Get-ClusterResource | Where-Object {$_.ResourceType -eq "Cluster IP Address"}).OwnerNode -eq $_.Name
+    }
+}
+
+$nodeInfo | Format-Table -AutoSize
+
+Write-Host "`n===== Witness Type =====" -ForegroundColor Cyan
+$quorumInfo = Get-ClusterQuorum
+
+switch ($quorumInfo.QuorumType) {
+    "NodeMajority" { "No witness used." }
+    "NodeAndDiskMajority" { "Disk Witness: $($quorumInfo.WitnessResource)" }
+    "NodeAndFileShareMajority" { "File Share Witness: $($quorumInfo.WitnessSharePath)" }
+    "CloudWitness" { "Cloud Witness: $($quorumInfo.WitnessSharePath)" }
+    default { "Witness Type Unknown or not configured." }
+}
+
+
+
+
+Windows Cluster Node Has Assigned Vote = 1, but Current Vote = 0
+
+
+
+
+
+
+
+🔍 What This Means:
+
+
+
+
+
+Assigned Vote = 1 → The node is configured to have a vote.
+Current Vote = 0 → The node is not currently contributing to the cluster quorum.
+
+
+
+
+# Get cluster quorum and dynamic quorum status
+
+Write-Host "===== Cluster Quorum Summary =====" -ForegroundColor Cyan
+
+Get-ClusterQuorum
+
+
+
+Write-Host "`n===== Dynamic Quorum Status =====" -ForegroundColor Cyan
+
+(Get-Cluster).DynamicQuorumEnabled
+
+
+
+Write-Host "`n===== Cluster Nodes and Voting =====" -ForegroundColor Cyan
+
+$clusterNodes = Get-ClusterNode
+
+
+
+$nodeInfo = $clusterNodes | ForEach-Object {
+
+    [PSCustomObject]@{
+
+        NodeName      = $_.Name
+
+        Status        = $_.State
+
+        NodeWeight    = $_.NodeWeight
+
+        AssignedVote  = (Get-ClusterNode $_.Name).NodeWeight
+
+        CurrentVote   = if ((Get-ClusterGroup "Cluster Group").OwnerNode -eq $_.Name) { 1 } else { 0 }
+
+    }
+
+}
+
+
+
+$nodeInfo | Format-Table -AutoSize
+
+
+
+Write-Host "`n===== Witness Type =====" -ForegroundColor Cyan
+
+$quorumInfo = Get-ClusterQuorum
+
+
+
+switch ($quorumInfo.QuorumType) {
+
+    "NodeMajority" { "No witness used." }
+
+    "NodeAndDiskMajority" { "Disk Witness: $($quorumInfo.WitnessResource)" }
+
+    "NodeAndFileShareMajority" { "File Share Witness: $($quorumInfo.WitnessSharePath)" }
+
+    "CloudWitness" { "Cloud Witness: $($quorumInfo.WitnessSharePath)" }
+
+    default { "Witness Type Unknown or not configured." }
+
+}
+
