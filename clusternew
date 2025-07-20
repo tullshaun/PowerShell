@@ -1,3 +1,73 @@
+# PowerShell Script: Cluster and Always On Health Check (Safe Read-Only)
+# Run as Administrator on a cluster node
+
+Write-Host "=== Cluster Quorum and Witness Status ===" -ForegroundColor Cyan
+$quorum = Get-ClusterQuorum
+$cluster = Get-Cluster
+
+$quorum | Format-List
+Write-Host "`nDynamic Quorum: $($cluster.DynamicQuorum)" -ForegroundColor Yellow
+Write-Host "Witness Dynamic Weight: $($cluster.WitnessDynamicWeight)" -ForegroundColor Yellow
+
+Write-Host "`n=== Voting Members and States ===" -ForegroundColor Cyan
+Get-ClusterNode | Select-Object NodeName, State, DynamicWeight, NodeWeight
+
+Write-Host "`n=== Cluster IP Resource Bindings ===" -ForegroundColor Cyan
+Get-ClusterResource | Where-Object { $_.ResourceType -eq "IP Address" } | ForEach-Object {
+    Write-Host "`nResource: $($_.Name)"
+    Get-ClusterParameter -InputObject $_ | Format-Table Name, Value
+}
+
+Write-Host "`n=== Cluster Name Resource Dependencies ===" -ForegroundColor Cyan
+Get-ClusterResource | Where-Object { $_.ResourceType -eq "Network Name" } | ForEach-Object {
+    Write-Host "`nResource: $($_.Name)"
+    Get-ClusterResourceDependency -Resource $($_.Name)
+}
+
+Write-Host "`n=== AG Listener RegisterAllProvidersIP Setting ===" -ForegroundColor Cyan
+Get-ClusterResource | Where-Object { $_.ResourceType -eq "Network Name" -and $_.Name -like "*_AGListener*" } | ForEach-Object {
+    Write-Host "`nAG Listener: $($_.Name)"
+    Get-ClusterParameter -InputObject $_ | Where-Object { $_.Name -eq "RegisterAllProvidersIP" } | Format-Table Name, Value
+}
+
+Write-Host "`n=== File Share Witness Connectivity Test ===" -ForegroundColor Cyan
+$witnessPath = ($quorum.QuorumResource | Get-ClusterParameter | Where-Object { $_.Name -eq "SharePath" }).Value
+if ($witnessPath) {
+    Write-Host "Witness Path: $witnessPath"
+    if (Test-Path $witnessPath) {
+        Write-Host "Witness path is reachable." -ForegroundColor Green
+    } else {
+        Write-Host "Witness path is NOT reachable!" -ForegroundColor Red
+    }
+} else {
+    Write-Host "No file share witness configured." -ForegroundColor Yellow
+}
+
+Write-Host "`n=== Summary ===" -ForegroundColor Cyan
+Write-Host "- Confirm quorum majority model and witness health."
+Write-Host "- Ensure cluster IP resources are mapped to correct subnets."
+Write-Host "- Validate RegisterAllProvidersIP for multi-subnet AG listeners."
+Write-Host "- Harden witness server connectivity or consider a cloud witness."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # PowerShell Script: Cluster and Always On Health Check
 # Run as Administrator on a cluster node
 
