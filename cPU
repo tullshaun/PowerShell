@@ -19,3 +19,29 @@ Invoke-Command -ComputerName $servers -ScriptBlock {
 
 
   psexec @servers.txt -nobanner powershell.exe -Command "Get-Process | Sort-Object CPU -Descending | Select-Object -First 3 -Property ProcessName, Id, CPU | Format-Table"
+
+# 1. Define your list of server names
+$servers = @(
+    "Server01",
+    "Server02",
+    "Server03",
+    "Server04",
+    "Server05",
+    "Server06",
+    "Server07",
+    "Server08",
+    "Server09",
+    "Server10"
+)
+
+# 2. Run the command to get CPU usage as a percentage
+Invoke-Command -ComputerName $servers -ScriptBlock {
+    Get-Counter -Counter '\Process(*)\% Processor Time' -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty CounterSamples |
+        Where-Object { $_.InstanceName -ne 'idle' -and $_.InstanceName -ne '_total' } |
+        Sort-Object -Property CookedValue -Descending |
+        Select-Object -First 3 |
+        Select-Object @{Name='ProcessName'; Expression={$_.InstanceName}},
+                      @{Name='CPU_Percent'; Expression={[math]::Round($_.CookedValue, 2)}},
+                      PSComputerName
+} | Format-Table -AutoSize
