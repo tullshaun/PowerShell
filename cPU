@@ -1,0 +1,21 @@
+# 1. Define your list of server names
+$servers = @(
+    "Server01",
+    "Server02",
+    "Server03",
+    "Server04",
+    "Server05",
+    "Server06",
+    "Server07",
+    "Server08",
+    "Server09",
+    "Server10"
+)
+
+# 2. Run the command against all servers
+Invoke-Command -ComputerName $servers -ScriptBlock {
+    Get-Process | Sort-Object -Property CPU -Descending | Select-Object -First 3 -Property ProcessName, Id, CPU, PSComputerName
+} | Format-Table -AutoSize
+
+
+  psexec @servers.txt -nobanner powershell.exe -Command "Get-Process | Sort-Object CPU -Descending | Select-Object -First 3 -Property ProcessName, Id, CPU | Format-Table"
