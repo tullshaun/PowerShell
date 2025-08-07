@@ -1,0 +1,3 @@
+appcmd.exe list config "MizApp/Hermes" -section:system.webServer/security/authentication/windowsAuthentication
+
+https://learn.microsoft.com/en-us/iis/get-started/getting-started-with-iis/getting-started-with-appcmdexe
