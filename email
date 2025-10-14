@@ -20,3 +20,19 @@ Get-ADGroupMember -Identity "YourGroupName" -Recursive |
     Get-ADUser -Properties mail |
     Select-Object Name, mail |
     Export-Csv "C:\Temp\GroupMembers.csv" -NoTypeInformation
+
+
+#usernames in a text file
+Get-Content "C:\Temp\UserList.txt" | ForEach-Object {
+    Get-ADUser $_ -Properties mail | Select-Object SamAccountName, mail
+}
+#export to CSV
+Get-Content "C:\Temp\UserList.txt" | ForEach-Object {
+    Get-ADUser $_ -Properties mail | Select SamAccountName, mail
+} | Export-Csv "C:\Temp\UserEmails.csv" -NoTypeInformation
+
+
+#email ready
+(Get-Content "C:\Temp\UserList.txt" | ForEach-Object {
+    (Get-ADUser $_ -Properties mail).mail
+}) -join ';'
