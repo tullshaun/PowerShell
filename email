@@ -1,0 +1,5 @@
+Get-ADGroupMember -Identity "YourGroupName" -Recursive |
+    Where-Object {$_.ObjectClass -eq 'user'} |
+    Get-ADUser -Properties mail |
+    Select-Object Name, mail |
+    Export-Csv "C:\Temp\GroupMembers.csv" -NoTypeInformation
