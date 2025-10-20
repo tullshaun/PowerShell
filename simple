@@ -1,0 +1,14 @@
+# Simple check for a service on multiple servers with error handling
+
+$servers = "srv1","srv2","srv3"
+$service = "Spooler"
+
+foreach ($s in $servers) {
+    try {
+        Get-Service -ComputerName $s -Name $service -ErrorAction Stop |
+        Select-Object @{Name='Server';Expression={$s}}, Name, Status
+    }
+    catch {
+        Write-Host "$s : ERROR - $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
